@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>H 公司校园招聘 - 请先登录</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+    <style>
+      .gate {
+        background: #fff;
+        border: 1px solid #e2e5ea;
+        border-radius: 6px;
+        padding: 32px;
+        text-align: center;
+        max-width: 420px;
+        margin: 40px auto;
+      }
+      .qr {
+        width: 160px;
+        height: 160px;
+        margin: 18px auto;
+        background: repeating-conic-gradient(#222 0 25%, #fff 0 50%) 0 0/16px 16px;
+        border: 8px solid #fff;
+        outline: 1px solid #ddd;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>H 公司 · 校园招聘</h1>
+      <p>岗位：机器人算法工程师</p>
+    </header>
+
+    <main>
+      <!--
+        本站刁难点：申请表被登录挡住。
+        1. 初始显示扫码登录页，页面文本含「扫码登录」「验证码」等特征词
+        2. 表单区域此时不在 DOM 中 —— 直接解析会一无所获
+        3. 点「我已完成登录」后才渲染表单，并在 localStorage 写入登录态
+        4. 带登录态再次访问会直接进入表单 —— 用于验证 Persistent Context 复用
+
+        注意：这里模拟的是「用户手动完成登录」的动作，系统只负责检测与等待，
+        不包含任何自动绕过逻辑（PRD §74）。
+      -->
+
+      <section class="gate" id="login-gate">
+        <h2>请先登录</h2>
+        <p>请使用微信扫码登录后查看职位申请表</p>
+        <div class="qr" aria-label="登录二维码"></div>
+        <p style="font-size: 13px; color: #888">如二维码失效，请刷新页面获取新的验证码</p>
+        <button type="button" id="simulate-login">我已完成登录（模拟）</button>
+      </section>
+
+      <section id="apply-section" class="hidden">
+        <div class="notice">登录成功，请填写申请信息。</div>
+
+        <form id="login-form" action="/mock_login/success.html" method="get">
+          <fieldset>
+            <legend>基本信息</legend>
+
+            <div class="row">
+              <label class="req" for="l-name">姓名</label>
+              <input type="text" id="l-name" name="l-name" />
+            </div>
+
+            <div class="row">
+              <label class="req" for="l-phone">手机号</label>
+              <input type="tel" id="l-phone" name="l-phone" />
+            </div>
+
+            <div class="row">
+              <label for="l-school">毕业院校</label>
+              <input type="text" id="l-school" name="l-school" />
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>经历</legend>
+
+            <div class="row">
+              <label for="l-research">科研经历</label>
+              <textarea id="l-research" name="l-research"></textarea>
+            </div>
+
+            <div class="row">
+              <label for="l-project">项目经历</label>
+              <textarea id="l-project" name="l-project"></textarea>
+            </div>
+          </fieldset>
+
+          <div class="actions">
+            <button type="submit" id="submit-btn">提交申请</button>
+            <button type="button" class="secondary" id="logout-btn">退出登录</button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const STORAGE_KEY = 'autojob-mock-login';
+
+      function showApplyForm() {
+        document.getElementById('login-gate').classList.add('hidden');
+        document.getElementById('apply-section').classList.remove('hidden');
+      }
+
+      function showLoginGate() {
+        document.getElementById('login-gate').classList.remove('hidden');
+        document.getElementById('apply-section').classList.add('hidden');
+      }
+
+      // 登录态存在 localStorage —— Persistent Context 会把它持久化到磁盘
+      if (localStorage.getItem(STORAGE_KEY) === 'ok') {
+        showApplyForm();
+      } else {
+        showLoginGate();
+      }
+
+      document.getElementById('simulate-login').addEventListener('click', () => {
+        localStorage.setItem(STORAGE_KEY, 'ok');
+        showApplyForm();
+      });
+
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.removeItem(STORAGE_KEY);
+        showLoginGate();
+      });
+    </script>
+  </body>
+</html>

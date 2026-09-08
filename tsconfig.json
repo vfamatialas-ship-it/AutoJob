@@ -12,7 +12,11 @@
       "@autojob/form-schema": ["packages/form-schema/src/index.ts"],
       "@autojob/form-schema/*": ["packages/form-schema/src/*"],
       "@autojob/form-mapper": ["packages/form-mapper/src/index.ts"],
-      "@autojob/form-mapper/*": ["packages/form-mapper/src/*"]
+      "@autojob/form-mapper/*": ["packages/form-mapper/src/*"],
+      "@autojob/browser": ["packages/browser/src/index.ts"],
+      "@autojob/browser/*": ["packages/browser/src/*"],
+      "@autojob/database": ["packages/database/src/index.ts"],
+      "@autojob/database/*": ["packages/database/src/*"]
     }
   },
   "include": [

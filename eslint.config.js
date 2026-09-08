@@ -47,9 +47,16 @@ export default tseslint.config(
     rules: { 'no-restricted-syntax': 'off' },
   },
   {
+    // 独立的 Node 脚本（非 TS，不走 tsconfig），需要显式声明 Node 全局
+    files: ['scripts/**/*.mjs', '*.mjs'],
+    languageOptions: {
+      globals: { process: 'readonly', console: 'readonly', URL: 'readonly' },
+    },
+  },
+  {
     // 浏览器全局只允许出现在会被送进页面执行的脚本里，以及 Playwright 测试中
     files: ['packages/**/src/**/*.ts', 'apps/**/src/**/*.ts'],
-    ignores: ['packages/form-schema/src/raw-field.ts'],
+    ignores: ['packages/form-schema/src/raw-field.ts', 'packages/browser/src/page-scripts.ts'],
     rules: {
       'no-restricted-globals': [
         'error',

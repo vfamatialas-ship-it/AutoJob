@@ -10,6 +10,8 @@
 import { Command } from 'commander';
 import { AutoJobError, ErrorCode, createLogger, createRunId, toAutoJobError } from '@autojob/core';
 import { registerDoctorCommand } from './commands/doctor.js';
+import { registerProfileCommand } from './commands/profile.js';
+import { registerApplyCommand } from './commands/apply.js';
 
 const VERSION = '0.0.1';
 
@@ -23,12 +25,12 @@ export function buildProgram(): Command {
     .helpOption('-h, --help', '显示帮助');
 
   registerDoctorCommand(program);
+  registerProfileCommand(program);
+  registerApplyCommand(program);
 
   // 占位子命令：明确告知尚未实现，避免误以为可用（PRD §71 禁止含糊失败）
   const planned: ReadonlyArray<readonly [string, string, string]> = [
-    ['profile', '管理 Candidate Profile（导入 / 导出 / 校验）', 'M1'],
     ['asset', '管理附件库（简历 / 作品集 / 成绩单 / 证书）', 'M5'],
-    ['apply', '对指定招聘 URL 执行自动填写，在提交前停止', 'M5'],
     ['jobs', '抓取企业招聘页的岗位列表（只读，不投递）', 'M7'],
     ['match', '按岗位偏好计算匹配度并排序', 'M7'],
     ['app', '查看与更新投递记录（Dashboard）', 'M9'],
@@ -57,7 +59,13 @@ export async function main(argv: readonly string[]): Promise<number> {
 
   try {
     await buildProgram().parseAsync([...argv]);
-    return 0;
+
+    /*
+     * 子命令通过 process.exitCode 表达非零结果（doctor 检查未通过、apply 遇到
+     * 重复投递等）。这里必须把它读回来 —— 早期版本无条件 return 0，
+     * 把子命令设置的退出码悄悄抹掉了，脚本里 `autojob doctor && ...` 会误判成功。
+     */
+    return typeof process.exitCode === 'number' ? process.exitCode : 0;
   } catch (thrown) {
     const error = toAutoJobError(thrown);
     log.error(error.message, { code: error.code, ...error.context });

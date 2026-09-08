@@ -61,8 +61,8 @@ TypeScript · Node 22 · Playwright · SQLite + Drizzle · Zod · Vitest · Taur
 | M2      | Mock ATS 站点群（7 个刁难站）       | ✅ 完成 |
 | M3      | Form Schema + 语义分类器            | ✅ 完成 |
 | M4      | Mapping Engine + Mapping Memory     | ✅ 完成 |
-| M5      | 浏览器填写引擎（提交前停止）        | 进行中  |
-| M6      | Application Diff + 内容自适应       | 待开始  |
+| M5      | 浏览器填写引擎（提交前停止）        | ✅ 完成 |
+| M6      | Application Diff + 内容自适应       | 进行中  |
 | M7      | Job Discovery + Job Matcher         | 待开始  |
 | M8      | 第一个真实 ATS Adapter              | 待开始  |
 | M9      | Submit + 验证 + Tracker（MVP 完成） | 待开始  |

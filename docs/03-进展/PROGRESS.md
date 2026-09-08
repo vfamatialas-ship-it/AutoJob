@@ -4,6 +4,97 @@
 
 ---
 
+## 2026-09-09 · M5 浏览器填写引擎（PRD Phase 0 验收点）
+
+### 本轮目标
+
+`autojob apply <url>` 真正打开浏览器把表单填出来，**在提交前停住**。这是第一个可演示的里程碑，也是首次使用**真实 Profile** 运行。
+
+### 修改文件
+
+- `materials/profile.local.json`（**已 gitignore**）：真实 Profile
+- `packages/browser/src/`：`task-state` `session` `page-scripts` `filler` `validator` `run-artifacts`
+- `packages/database/src/`：`schema` `client` `repository`
+- `apps/cli/src/commands/`：`profile.ts`（校验 + 脱敏摘要）、`apply.ts`（完整编排）
+- `tests/fixtures/sites/mock_login/`：登录拦截站
+- `scripts/privacy-check.mjs` + `pnpm privacy:check`（并入 CI）
+- 测试：`task-state` `session` `repository` `exit-code` + `tests/e2e/filler.spec.ts`
+
+### 实现内容
+
+**1. 状态机把 WAITING_USER 当一等公民**
+
+14 态转移表显式定义合法转移，非法转移直接抛错。三条关键约束：`LOGIN_REQUIRED` 只能转 `WAITING_USER`（不能自行绕过）；`FILLING` 不能直接跳 `SUBMITTING`（必须过校验）；`SUBMITTING` 不能直接判成功（必须过 `VERIFYING`）。
+
+**2. FormFiller：四类真实难点各有策略**
+
+M2 在 `hard-widgets.spec.ts` 里踩过的坑，这里逐个落地：自定义下拉「点开 → 等渲染 → 点选项」、autocomplete「输入 → 等候选 → 点选」、隐藏 file input 直接 `setInputFiles`、Repeatable 用真实 DOM 顺序而非索引推算。
+
+**每次填写后回读验证** —— 填进去 ≠ 填成功。自定义控件可能只改了显示文本，前端校验可能把值清空。对不上就报失败。
+
+**3. SQLite 落库**
+
+四张表（Company / Job / Application / ApplicationEvent）+ MappingRule 持久化（补上 M4 的内存实现限制）。两条不变量：状态变化必然伴随一条 Event（绑在同一方法里）；同一岗位只能有一条投递记录（唯一索引兜底 + 填表前主动查询）。
+
+**4. Run 产物目录**
+
+每次运行生成 `runs/<runId>/`：4 张全页截图 + `plan.json`（映射溯源与 warning）+ `transitions.json`（状态机历史）。这些文件含真实个人信息，已全部 gitignore。
+
+**5. 隐私审计脚本**
+
+两层检查：从本地真实 Profile 读出姓名/手机/邮箱/微信/雇主名，在全部 git 跟踪文件里精确搜；再用通用模式扫任意手机号与身份证，扣除已登记的虚构值白名单。已并入 `pnpm check` 与 CI。
+
+### 测试结果
+
+```
+pnpm lint          ✓
+pnpm typecheck     ✓
+pnpm test          ✓ 15 files / 245 tests
+pnpm privacy:check ✓ 扫描 108 个跟踪文件，未发现真实个人信息
+pnpm test:e2e      ✓ 125 passed / 4 skipped（真实 Chromium）
+```
+
+**PRD §51 验收清单（用真实 Profile 实跑）**
+
+| 验收项                                | 结果                                       |
+| ------------------------------------- | ------------------------------------------ |
+| 正确填写姓名/邮箱/电话/学校/专业/学历 | ✓                                          |
+| 项目/科研/奖项/个人主页正确落位       | ✓                                          |
+| **科研项目不进入工作经历**            | ✓ 工作经历栏实测为空                       |
+| **奖学金与竞赛正确分类**              | ✓ 分栏站 3/4 拆开，合并站 8 项全入         |
+| GitHub / 个人主页自动填写             | ✓                                          |
+| Resume / Portfolio 上传成功           | ✓ 真实 PDF 上传，成绩单缺失如实报缺        |
+| **在 Submit 前停止**                  | ✓ 无 `--submit` 参数，命令本身没有提交能力 |
+| Application 入库 + 截图落盘           | ✓                                          |
+| E2E 在 CI 中通过                      | ✓                                          |
+
+### 本轮抓到的三个真 bug
+
+1. **`__name is not defined`** —— tsx/esbuild 编译时给函数包 `__name(fn, "name")`，该辅助只存在于 Node 侧；脚本序列化进页面后就找不到。**迷惑之处：Playwright 自己的 runner 用另一套转换，E2E 全绿，只有走 tsx 的 CLI 路径才炸。** 修法是注入恒等垫片，并加了断言垫片存在的回归测试。
+2. **CLI 退出码被吞** —— `main()` 在 `parseAsync` 后无条件 `return 0`，把子命令设置的 `process.exitCode` 覆盖掉。后果是重复投递返回 0、`doctor` 检查失败也返回 0，脚本里 `autojob doctor && ...` 会误判成功。
+3. **autocomplete 白等 3 秒** —— 每个普通文本框都在等一个根本不存在的候选列表。改用 `count()` 秒判列表骨架是否存在做前置判断后，A 公司用例从 **9.4s 降到 0.37s**，整套 E2E 从 17.1s 降到 2.2s。
+
+另外隐私审计上线后立刻抓到两处疏漏：修脱敏 bug 时把真实邮箱写进了代码注释；`.gitignore` 里残留了含真实姓名的目录名。
+
+### 已知限制
+
+1. **没有提交能力，这是有意的**。`apply` 没有也不会有 `--submit`，真正的提交留到 M9 且必须走 Application Diff 确认流程。
+2. **Repeatable 填写只做了「添加条目」的能力**，尚未接入 `apply` 主流程 —— 多条经历分别填入多个条目组的编排留到 M8。
+3. **自定义控件的触发器定位是启发式的**（找 button / `[role=combobox]` / `.combo-input`）。真实 ATS 结构千奇百怪，M8 的 Adapter 会针对具体站点覆盖。
+4. **`--headless` 只应用于测试**。正常使用必须 headful，用户要能看见并随时接管。
+5. **better-sqlite3 是原生模块**，本机从源码编译成功。M11 打 Windows 包时需按目标平台重新构建。
+6. **超长内容仍然转人工**（C 公司的 100 字项目简介），等 M6 的 ContentAdapter。
+
+### 下一阶段建议
+
+进入 **M6 Application Diff + 内容自适应**。素材已经齐了：
+
+1. `plan.json` 里已有完整的 `sourceRecordIds` 与 `warnings`，Diff 只需渲染，不必重新计算。
+2. 优先做 ContentAdapter —— 它能把当前「超长转人工」的字段自动化掉，是 M5 遗留限制里最影响体验的一条。
+3. 内容生成必须过 Canonical Facts 校验器：生成文本里出现的数字必须都能在 `canonicalFacts[].metrics` 中找到出处。真实 Profile 里已有 `90.4%` `86.7%` `71.56%` `30.2%` 等量化指标，正好作为测试基准。
+
+---
+
 ## 2026-09-09 · M4 Mapping Engine + Mapping Memory
 
 ### 本轮目标

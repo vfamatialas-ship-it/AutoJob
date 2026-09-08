@@ -67,6 +67,24 @@ describe('maskText 综合脱敏', () => {
     expect(output).not.toContain('13812341234');
   });
 
+  it('回归：邮箱本地部分含长数字时，不被手机号规则切碎', () => {
+    // 曾经的 bug：maskPhone 先跑，把 19303864024 当成手机号切成 193****4024，
+    // 导致 maskEmail 只能从星号后接手，最终输出 Yang193****4***@qq.com，
+    // 暴露的字符远多于预期的「首字母 + 域名」。
+    const output = maskText('zhang19303864024@qq.com');
+
+    expect(output).toBe('z***@qq.com');
+    expect(output).not.toContain('193');
+  });
+
+  it('回归：同一段文本里的邮箱与手机号各自按规则脱敏', () => {
+    const output = maskText('邮箱 li12345678901@example.com 电话 13812341234');
+
+    expect(output).toContain('l***@example.com');
+    expect(output).toContain('138****1234');
+    expect(output).not.toContain('12345678901');
+  });
+
   it('屏蔽 Bearer token', () => {
     expect(maskText('Authorization: Bearer abc.def.ghi')).toContain('[已屏蔽]');
     expect(maskText('Authorization: Bearer abc.def.ghi')).not.toContain('abc.def.ghi');

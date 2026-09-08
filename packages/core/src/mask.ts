@@ -104,10 +104,17 @@ function maskCredentialText(input: string): string {
 
 /**
  * 自由文本综合脱敏。
- * 顺序重要：先屏蔽身份证（长串），再处理手机号，否则 18 位身份证里的片段会被当成手机号。
+ *
+ * 顺序是有讲究的，三条都踩过坑：
+ * 1. 身份证先于手机号 —— 否则 18 位身份证里的连续 11 位会被当成手机号，
+ *    脱敏出一个残缺但仍可识别的串。
+ * 2. **邮箱先于手机号** —— 邮箱本地部分常含长数字（如 zhang19303864024@qq.com），
+ *    若先跑手机号规则会把它切成 193****4024，导致 maskEmail 只能保留到星号前，
+ *    最终输出 Yang193****4***@qq.com，暴露的字符远多于预期的「首字母 + 域名」。
+ * 3. 凭证（Bearer / cookie=）最先处理，避免其值被后续规则局部替换后失去整体特征。
  */
 export function maskText(input: string): string {
-  return maskEmail(maskPhone(maskIdNumber(maskCredentialText(input))));
+  return maskPhone(maskEmail(maskIdNumber(maskCredentialText(input))));
 }
 
 /**

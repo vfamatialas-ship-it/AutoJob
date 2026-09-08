@@ -63,6 +63,7 @@ pnpm check          # lint + typecheck + test，提交前必跑
 pnpm lint           # ESLint
 pnpm typecheck      # tsc --noEmit
 pnpm test           # Vitest
+pnpm privacy:check  # 隐私审计：真实个人信息不得进 git
 pnpm test:e2e       # Playwright E2E（Mock 站点）
 pnpm mock:serve     # 手动启动 Mock 招聘站
 pnpm autojob doctor # 环境自检
@@ -72,6 +73,6 @@ pnpm autojob doctor # 环境自检
 
 见 `docs/02-计划/AutoJob_PLAN_v1.0.md` 的里程碑表与 `docs/03-进展/PROGRESS.md`。
 
-**当前所处阶段：M4 已完成，下一步 M5（浏览器填写引擎，PRD Phase 0 验收点）。**
+**当前所处阶段：M5 已完成（PRD Phase 0 验收通过），下一步 M6（Application Diff + 内容自适应）。**
 
 在当前里程碑的验收标准全部满足之前，不要开始下一个里程碑（PRD §80 结尾）。

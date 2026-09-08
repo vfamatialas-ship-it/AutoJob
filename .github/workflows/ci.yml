@@ -40,6 +40,10 @@ jobs:
       - name: 单元测试
         run: pnpm test
 
+      # 项目最重要的约束：真实个人信息绝不进仓库
+      - name: 隐私审计
+        run: pnpm privacy:check
+
       - name: 安装 Playwright 浏览器
         run: pnpm exec playwright install --with-deps chromium
 

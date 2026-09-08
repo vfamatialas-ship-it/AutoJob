@@ -8,6 +8,12 @@
     "autojob": "./src/index.ts"
   },
   "dependencies": {
-    "commander": "^12.1.0"
+    "commander": "^12.1.0",
+    "@autojob/candidate-profile": "workspace:*",
+    "@autojob/core": "workspace:*",
+    "@autojob/form-schema": "workspace:*",
+    "@autojob/form-mapper": "workspace:*",
+    "@autojob/browser": "workspace:*",
+    "@autojob/database": "workspace:*"
   }
 }

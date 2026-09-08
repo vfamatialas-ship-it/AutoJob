@@ -65,6 +65,11 @@ export interface MockSite {
   readonly fields: readonly MockField[];
   /** 期望 M4 产生的 warning 关键词，为空表示不应有 warning */
   readonly expectedWarnings: readonly string[];
+  /**
+   * 页面被登录/验证码挡住，初始状态下表单不可见。
+   * 通用的结构性断言（如「提交按钮可见」）对这类站不适用，由专项用例覆盖。
+   */
+  readonly gated?: boolean;
 }
 
 export const MOCK_SITES: readonly MockSite[] = [
@@ -472,6 +477,24 @@ export const MOCK_SITES: readonly MockSite[] = [
         maxLength: 500,
       },
     ],
+    expectedWarnings: [],
+  },
+  {
+    id: 'mock_login',
+    name: 'H 公司 · 申请表被登录挡住',
+    quirks: [
+      '初始只显示扫码登录页，表单区域根本不在 DOM 中',
+      '页面文本含「扫码登录」「验证码」等特征词，供登录检测识别',
+      '登录态写入 localStorage，用于验证 Persistent Context 复用',
+    ],
+    applyPath: '/mock_login/apply.html',
+    gated: true,
+    targets: {
+      experience: ['research_experience', 'project_experience'],
+      award: [],
+    },
+    // 登录前字段不存在，登录后才可解析，因此由专门的 E2E 用例覆盖
+    fields: [],
     expectedWarnings: [],
   },
 ];

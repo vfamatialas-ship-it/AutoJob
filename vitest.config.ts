@@ -10,6 +10,8 @@ export default defineConfig({
       '@autojob/candidate-profile': resolvePath('./packages/candidate-profile/src/index.ts'),
       '@autojob/form-schema': resolvePath('./packages/form-schema/src/index.ts'),
       '@autojob/form-mapper': resolvePath('./packages/form-mapper/src/index.ts'),
+      '@autojob/browser': resolvePath('./packages/browser/src/index.ts'),
+      '@autojob/database': resolvePath('./packages/database/src/index.ts'),
     },
   },
   test: {

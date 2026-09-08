@@ -1,0 +1,17 @@
+{
+  "name": "@autojob/browser",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Playwright 浏览器自动化：持久会话、状态机、表单填写、校验",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@autojob/core": "workspace:*",
+    "@autojob/form-mapper": "workspace:*",
+    "@autojob/form-schema": "workspace:*",
+    "playwright": "^1.63.0"
+  }
+}
