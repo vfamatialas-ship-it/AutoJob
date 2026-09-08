@@ -150,11 +150,23 @@ test.describe('B 公司 · 科研与项目分栏', () => {
 });
 
 test.describe('C 公司 · 字数限制', () => {
-  test('超长字段保持为空，绝不截断', async ({ page }) => {
+  test('超长字段被压缩后填入，且不超限、不截断句子', async ({ page }) => {
     await runPipeline(page, '/mock_company_c/apply.html');
 
-    // 项目简介限 100 字，内容超长 → 映射阶段已转人工，填写阶段跳过
-    expect(await page.inputValue('#c-project-brief')).toBe('');
+    // M6 起：项目简介限 100 字，内容超长时自动抽取压缩而非留空
+    const brief = await page.inputValue('#c-project-brief');
+    expect(brief.length).toBeGreaterThan(0);
+    expect(brief.length).toBeLessThanOrEqual(100);
+    expect(brief).not.toMatch(/[，、]$/);
+  });
+
+  test('项目简介与主要成果内容不同 —— 两栏各填各的侧面', async ({ page }) => {
+    await runPipeline(page, '/mock_company_c/apply.html');
+
+    const brief = await page.inputValue('#c-project-brief');
+    const achievement = await page.inputValue('#c-achievement');
+
+    expect(brief).not.toBe(achievement);
   });
 
   test('三个奖项栏各填各的', async ({ page }) => {

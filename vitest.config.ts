@@ -12,6 +12,8 @@ export default defineConfig({
       '@autojob/form-mapper': resolvePath('./packages/form-mapper/src/index.ts'),
       '@autojob/browser': resolvePath('./packages/browser/src/index.ts'),
       '@autojob/database': resolvePath('./packages/database/src/index.ts'),
+      '@autojob/content-adapter': resolvePath('./packages/content-adapter/src/index.ts'),
+      '@autojob/application-diff': resolvePath('./packages/application-diff/src/index.ts'),
     },
   },
   test: {

@@ -36,6 +36,7 @@ import {
   summarizePlan,
 } from '@autojob/form-mapper';
 import { ApplicationRepository, openDatabase } from '@autojob/database';
+import { buildDiff, renderDiff } from '@autojob/application-diff';
 import type { Command } from 'commander';
 
 interface ApplyOptions {
@@ -46,6 +47,7 @@ interface ApplyOptions {
   readonly db?: string;
   readonly runsDir?: string;
   readonly dryRun?: boolean;
+  readonly verbose?: boolean;
 }
 
 function loadProfile(path: string): CandidateProfile {
@@ -219,12 +221,22 @@ export async function runApply(url: string, options: ApplyOptions): Promise<numb
       warnings,
     });
 
+    // Application Diff —— 提交前把系统做的所有转换摊给用户看（PRD §35）
+    const diff = buildDiff(plan, profile, {
+      company: company.name,
+      jobTitle: job.title,
+      url,
+    });
+    await artifacts.writeJson('diff', diff);
+
     if (options.dryRun === true) {
       write('');
-      write('（--dry-run：仅生成计划，未填写）');
+      write(renderDiff(diff, { verbose: options.verbose === true }));
+      write('');
+      write('（--dry-run：仅生成计划与 Diff，未实际填写）');
       write(`产物目录：${artifacts.dir}`);
       db.close();
-      return 0;
+      return diff.submittable ? 0 : 2;
     }
 
     // ── 填写
@@ -248,24 +260,9 @@ export async function runApply(url: string, options: ApplyOptions): Promise<numb
     write('── 表单校验');
     write(formatIssues(issues));
 
-    // ── 待确认的事项
-    const pending = plan.mappings.filter((mapping) => mapping.status === 'ask_user');
-    if (pending.length > 0) {
-      write('');
-      write(`── 需要你确认（${pending.length} 项）`);
-      for (const mapping of pending) {
-        write(`   · ${mapping.field.label}：${mapping.warnings[0]?.message ?? mapping.reason}`);
-      }
-    }
-
-    if (warnings.length > 0) {
-      write('');
-      write(`── 转换说明（${warnings.length} 条）`);
-      for (const warning of warnings) {
-        const mark = warning.severity === 'blocker' ? '✗' : warning.severity === 'warn' ? '⚠' : '·';
-        write(`   ${mark} ${warning.message}`);
-      }
-    }
+    // ── Application Diff
+    write('');
+    write(renderDiff(diff, { verbose: options.verbose === true }));
 
     // ── 落库并停止
     machine.to(TaskState.READY_TO_SUBMIT, '填写完成，等待用户确认提交');
@@ -318,7 +315,8 @@ export function registerApplyCommand(program: Command): void {
     .option('-j, --job <title>', '岗位名称')
     .option('--db <path>', '数据库路径（默认 ~/.autojob/autojob.db）')
     .option('--runs-dir <path>', '产物目录（默认 ~/.autojob/runs）')
-    .option('--dry-run', '只生成映射计划，不实际填写')
+    .option('--dry-run', '只生成映射计划与 Diff，不实际填写')
+    .option('--verbose', 'Diff 中展开全部字段内容与被排除的记录')
     .option('--headless', '无头模式运行（仅用于测试，正常使用请勿开启）')
     .action(async (url: string, options: ApplyOptions) => {
       process.exitCode = await runApply(url, options);

@@ -1,0 +1,15 @@
+{
+  "name": "@autojob/content-adapter",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "内容自适应：按字数限制压缩内容，且保证不编造任何事实",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@autojob/candidate-profile": "workspace:*",
+    "@autojob/core": "workspace:*"
+  }
+}

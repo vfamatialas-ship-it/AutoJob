@@ -453,19 +453,78 @@ describe('置信度闸门', () => {
   });
 });
 
-describe('字数限制', () => {
-  it('内容超限且无可用变体时转人工，绝不截断', () => {
-    const mapping = mapField(field('项目简介', 'PROJECT_EXPERIENCE', { maxLength: 50 }), context);
-    expect(mapping.status).toBe('ask_user');
-    expect(mapping.warnings.some((w) => w.code === 'CONTENT_TOO_LONG')).toBe(true);
-    expect(mapping.value).toBe('');
+/**
+ * 字数限制的处理在 M6 变了：
+ * M4 时超限一律转人工；M6 接入 ContentAdapter 后会先尝试抽取式压缩，
+ * 只有压到最简形态仍放不下时才转人工。
+ */
+describe('字数限制与内容自适应', () => {
+  it('内容超限时自动压缩，不再一律转人工', () => {
+    const mapping = mapField(field('项目简介', 'PROJECT_EXPERIENCE', { maxLength: 200 }), context);
+
+    expect(mapping.status).toBe('filled');
+    expect(mapping.value.length).toBeLessThanOrEqual(200);
+    expect(mapping.value.length).toBeGreaterThan(0);
   });
 
-  it('内容未超限时正常填写', () => {
+  it('压缩后标注 CONTENT_COMPRESSED（warn 级），不是阻断级', () => {
+    const mapping = mapField(field('项目简介', 'PROJECT_EXPERIENCE', { maxLength: 200 }), context);
+
+    const compressed = mapping.warnings.find((w) => w.code === 'CONTENT_COMPRESSED');
+    expect(compressed).toBeDefined();
+    // 压缩成功意味着内容填得进去，不该阻断提交
+    expect(compressed?.severity).toBe('warn');
+    expect(mapping.warnings.some((w) => w.code === 'CONTENT_TOO_LONG')).toBe(false);
+  });
+
+  it('reason 里说明压缩前后的字数，便于核对', () => {
+    const mapping = mapField(field('项目简介', 'PROJECT_EXPERIENCE', { maxLength: 200 }), context);
+    expect(mapping.reason).toMatch(/压缩至 \d+ 字/);
+  });
+
+  it('多种限制下都不超长', () => {
+    for (const limit of [100, 150, 200, 300, 500, 1000]) {
+      const mapping = mapField(
+        field('项目简介', 'PROJECT_EXPERIENCE', { maxLength: limit }),
+        context,
+      );
+      if (mapping.status === 'filled') {
+        expect(mapping.value.length, `限制 ${limit} 时超长`).toBeLessThanOrEqual(limit);
+      }
+    }
+  });
+
+  it('绝不截断句子 —— 压缩结果不以逗号顿号结尾', () => {
+    const mapping = mapField(field('项目简介', 'PROJECT_EXPERIENCE', { maxLength: 200 }), context);
+    expect(mapping.value).not.toMatch(/[，、]$/);
+  });
+
+  it('限制极紧到放不下任何一条记录时，仍然转人工而非输出误导性片段', () => {
+    const mapping = mapField(field('项目简介', 'PROJECT_EXPERIENCE', { maxLength: 6 }), context);
+
+    expect(mapping.status).toBe('ask_user');
+    expect(mapping.value).toBe('');
+    expect(mapping.warnings.some((w) => w.code === 'CONTENT_TOO_LONG')).toBe(true);
+  });
+
+  it('装不下全部记录时明确告知省略了几条', () => {
+    // 40 字只够放下一条记录的名称，另一条必然被整条舍弃
+    const mapping = mapField(field('项目简介', 'PROJECT_EXPERIENCE', { maxLength: 40 }), context);
+
+    expect(mapping.status).toBe('filled');
+    expect(mapping.warnings.some((w) => w.code === 'ITEMS_TRUNCATED')).toBe(true);
+    expect(mapping.warnings.find((w) => w.code === 'ITEMS_TRUNCATED')?.message).toMatch(
+      /已省略 \d+ 条/,
+    );
+  });
+
+  it('内容未超限时原样填写，不做任何压缩', () => {
     const mapping = mapField(
       field('项目经历', 'PROJECT_EXPERIENCE', { maxLength: 99999 }),
       context,
     );
+
     expect(mapping.status).toBe('filled');
+    expect(mapping.warnings.some((w) => w.code === 'CONTENT_TOO_LONG')).toBe(false);
   });
 });

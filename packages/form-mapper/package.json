@@ -12,6 +12,7 @@
     "@autojob/candidate-profile": "workspace:*",
     "@autojob/core": "workspace:*",
     "@autojob/form-schema": "workspace:*",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "@autojob/content-adapter": "workspace:*"
   }
 }

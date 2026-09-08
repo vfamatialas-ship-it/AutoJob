@@ -15,8 +15,10 @@ export const WarningCode = {
   MERGED_INTO_COMBINED_FIELD: 'MERGED_INTO_COMBINED_FIELD',
   /** 记录数超过网站限制，只填了前 N 条 */
   ITEMS_TRUNCATED: 'ITEMS_TRUNCATED',
-  /** 内容超出字数限制，需要生成压缩变体 */
+  /** 内容超出字数限制且**压缩后仍放不下**，只能转人工 */
   CONTENT_TOO_LONG: 'CONTENT_TOO_LONG',
+  /** 内容超长但**已成功压缩**，填得进去，只是请用户核对删减是否合理 */
+  CONTENT_COMPRESSED: 'CONTENT_COMPRESSED',
   /** Profile 里没有匹配的记录，该字段留空 */
   NO_MATCHING_DATA: 'NO_MATCHING_DATA',
   /** 必填字段没有数据可填 */
@@ -60,6 +62,7 @@ const SEVERITY: Record<WarningCode, WarningSeverity> = {
   MERGED_INTO_COMBINED_FIELD: 'info',
   ITEMS_TRUNCATED: 'warn',
   CONTENT_TOO_LONG: 'blocker',
+  CONTENT_COMPRESSED: 'warn',
   NO_MATCHING_DATA: 'info',
   REQUIRED_FIELD_EMPTY: 'blocker',
   LOW_CONFIDENCE: 'blocker',

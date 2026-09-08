@@ -44,6 +44,45 @@ import {
 import { MappingRuleStore, type RuleContext } from './mapping-rule.js';
 import { joinEntries, renderAward, renderExperience, renderProject } from './value-renderer.js';
 import { warn, type MappingWarning } from './warnings.js';
+import { adaptEntries, type AdaptableRecord, type ContentEmphasis } from '@autojob/content-adapter';
+
+/**
+ * Experience / Project → ContentAdapter 能吃的形态。
+ * 两者字段名略有出入（techStack vs technologies），在这里抹平。
+ */
+function toAdaptable(record: Experience | Project): AdaptableRecord {
+  return {
+    id: record.id,
+    name: record.name,
+    ...(record.organization === undefined || record.organization.length === 0
+      ? {}
+      : { organization: record.organization }),
+    ...(record.role === undefined || record.role.length === 0 ? {} : { role: record.role }),
+    startDate: record.startDate,
+    endDate: record.endDate,
+    descriptionCanonical: record.descriptionCanonical,
+    responsibilities: record.responsibilities,
+    achievements: record.achievements,
+    canonicalFacts: record.canonicalFacts,
+  };
+}
+
+/**
+ * 从岗位名里抽关键词，用于压缩时的侧重（PRD §31「可以针对岗位强化表达」）。
+ * 只做切分，不做语义扩展 —— 强化的是「保留哪句」，不是「写什么」。
+ */
+/** 细分语义 → 内容侧重。未列出的按 full 处理 */
+const EMPHASIS_BY_SEMANTIC: Readonly<Partial<Record<string, ContentEmphasis>>> = {
+  PROJECT_BRIEF: 'brief',
+  PROJECT_ACHIEVEMENT: 'achievement',
+};
+
+function extractKeywords(jobTitle: string): string[] {
+  return jobTitle
+    .split(/[\s\-—·/、,，()（）]+/)
+    .map((part) => part.trim())
+    .filter((part) => part.length >= 2);
+}
 
 export type MappingStatus = 'filled' | 'skipped' | 'ask_user';
 
@@ -146,38 +185,107 @@ function mapExperienceField(
   ];
   const recordIds = [...allowedByRule.map((e) => e.id), ...projects.map((p) => p.id)];
   let value = joinEntries(entries);
+  /** 实际填进字段的记录。压缩后可能少于候选集 */
+  let includedRecordIds: readonly string[] = recordIds;
 
-  // 超长处理：优先用 Project 已有的压缩变体，没有就转人工交给 M6 生成
+  let reason = `映射到 ${target}，共 ${recordIds.length} 条记录`;
+
+  // 超长处理（PRD §31）：先看有没有现成的压缩变体，没有就现场做抽取式压缩
   if (field.maxLength !== undefined && value.length > field.maxLength) {
+    const limit = field.maxLength;
+
+    // 1. Project 可能已经存了针对该字数的变体，优先用用户认可过的版本
     const variantEntries = [
       ...allowedByRule.map((experience) => renderExperience(experience)),
       ...projects.map(
-        (project) =>
-          pickVariantForLimit(project, field.maxLength ?? 0)?.content ?? renderProject(project),
+        (project) => pickVariantForLimit(project, limit)?.content ?? renderProject(project),
       ),
     ];
     const compact = joinEntries(variantEntries);
 
-    if (compact.length <= field.maxLength) {
+    if (compact.length <= limit) {
       value = compact;
+      reason = `映射到 ${target}，使用已有的压缩变体`;
     } else {
-      return {
-        field,
-        status: 'ask_user',
-        value: '',
-        sourceRecordIds: recordIds,
-        excluded,
-        warnings: [
-          ...warnings,
+      // 2. 现场压缩。抽取式，只挑已有句子，结构上不可能编造
+      const adapted = adaptEntries(
+        [...allowedByRule.map(toAdaptable), ...projects.map(toAdaptable)],
+        limit,
+        {
+          emphasis: EMPHASIS_BY_SEMANTIC[field.semanticType] ?? 'full',
+          ...(context.jobTitle === undefined
+            ? {}
+            : { targetKeywords: extractKeywords(context.jobTitle) }),
+        },
+      );
+
+      // 事实校验兜底。抽取式理论上必然通过，但这条防线不能省 ——
+      // 万一将来换成生成式实现，这里就是唯一拦得住编造的地方（PRD §3.5）
+      if (!adapted.guard.ok) {
+        return {
+          field,
+          status: 'ask_user',
+          value: '',
+          sourceRecordIds: recordIds,
+          excluded,
+          warnings: [
+            ...warnings,
+            warn(
+              'CONTENT_TOO_LONG',
+              `「${field.label}」的压缩结果出现了无出处的数值（${adapted.guard.violations
+                .map((item) => item.numeric)
+                .join('、')}），已拒绝使用，请手动填写`,
+              { fieldSelector: field.selector, recordIds },
+            ),
+          ],
+          reason: '压缩结果未通过 Canonical Facts 校验',
+          ruleSource: resolved.source,
+        };
+      }
+
+      if (adapted.includedIds.length === 0) {
+        return {
+          field,
+          status: 'ask_user',
+          value: '',
+          sourceRecordIds: recordIds,
+          excluded,
+          warnings: [
+            ...warnings,
+            warn(
+              'CONTENT_TOO_LONG',
+              `「${field.label}」限 ${limit} 字，连最简形态都放不下，需要你手动填写`,
+              { fieldSelector: field.selector, recordIds },
+            ),
+          ],
+          reason: '字数限制过紧，无法在不误导的前提下压缩',
+          ruleSource: resolved.source,
+        };
+      }
+
+      value = adapted.text;
+      // 溯源必须反映**实际填进去的**记录，而不是映射阶段的候选集。
+      // 早期版本直接沿用候选集，导致 Diff 声称内容来自 4 条记录、实际只有 1 条。
+      includedRecordIds = adapted.includedIds;
+      reason = `映射到 ${target}，原文 ${compact.length} 字已压缩至 ${adapted.length} 字（限 ${limit}）`;
+
+      warnings.push(
+        warn(
+          'CONTENT_COMPRESSED',
+          `「${field.label}」限 ${limit} 字，已按重要性抽取压缩（保留量化成果，未改写任何文字）`,
+          { fieldSelector: field.selector, recordIds: adapted.includedIds },
+        ),
+      );
+
+      if (adapted.droppedIds.length > 0) {
+        warnings.push(
           warn(
-            'CONTENT_TOO_LONG',
-            `「${field.label}」限 ${field.maxLength} 字，当前内容 ${value.length} 字，需要生成压缩版本`,
-            { fieldSelector: field.selector, recordIds },
+            'ITEMS_TRUNCATED',
+            `「${field.label}」字数不足以容纳全部 ${recordIds.length} 条记录，已省略 ${adapted.droppedIds.length} 条`,
+            { fieldSelector: field.selector, recordIds: adapted.droppedIds },
           ),
-        ],
-        reason: '内容超出字数限制，等待内容自适应生成压缩版本',
-        ruleSource: resolved.source,
-      };
+        );
+      }
     }
   }
 
@@ -185,10 +293,10 @@ function mapExperienceField(
     field,
     status: 'filled',
     value,
-    sourceRecordIds: recordIds,
+    sourceRecordIds: includedRecordIds,
     excluded,
     warnings,
-    reason: `映射到 ${target}，共 ${recordIds.length} 条记录`,
+    reason,
     ruleSource: resolved.source,
   };
 }

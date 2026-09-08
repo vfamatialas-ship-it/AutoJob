@@ -128,10 +128,27 @@ export const CLASSIFICATION_RULES: readonly ClassificationRule[] = [
     note: '科研 / 课题经历',
   },
   {
-    // 「研究项目」落在这里而不是上一条 —— 它是项目栏，不是科研栏
+    /*
+     * 「主要成果」「个人贡献」与「项目简介」虽然都属于项目栏，但要填的东西不同：
+     * 前者要产出与量化结果，后者要背景与做了什么。网站把它们分成两个框时，
+     * 若都按 PROJECT_EXPERIENCE 处理会填进几乎一样的内容 —— 既浪费字数又显得敷衍。
+     */
+    semanticType: 'PROJECT_ACHIEVEMENT',
+    pattern: /主要成果|项目成果|个人贡献|取得成果|成果产出|key\s*achievements?/i,
+    confidence: 0.94,
+    note: '项目成果（只填产出与量化结果）',
+  },
+  {
+    semanticType: 'PROJECT_BRIEF',
+    pattern: /项目简介|项目描述|项目概述|project\s*(brief|summary)/i,
+    confidence: 0.94,
+    note: '项目简介（只填背景与内容）',
+  },
+  {
+    // 「研究项目」落在这里而不是科研那条 —— 它是项目栏，不是科研栏
     semanticType: 'PROJECT_EXPERIENCE',
     pattern:
-      /项目经历|项目经验|研究项目|科研项目|项目简介|项目描述|项目情况|项目名称|主要成果|个人贡献|project\s*(experience|description)/i,
+      /项目经历|项目经验|研究项目|科研项目|项目情况|项目名称|project\s*(experience|description)/i,
     confidence: 0.95,
     note: '项目经历',
   },

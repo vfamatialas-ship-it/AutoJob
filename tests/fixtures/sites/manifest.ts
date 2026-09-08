@@ -293,7 +293,7 @@ export const MOCK_SITES: readonly MockSite[] = [
       {
         selector: '#c-project-brief',
         label: '项目简介',
-        semanticType: 'PROJECT_EXPERIENCE',
+        semanticType: 'PROJECT_BRIEF',
         required: false,
         challenge: 'plain_label',
         maxLength: 100,
@@ -301,7 +301,7 @@ export const MOCK_SITES: readonly MockSite[] = [
       {
         selector: '#c-achievement',
         label: '主要成果',
-        semanticType: 'PROJECT_EXPERIENCE',
+        semanticType: 'PROJECT_ACHIEVEMENT',
         required: false,
         challenge: 'plain_label',
         maxLength: 300,

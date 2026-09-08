@@ -1,0 +1,17 @@
+{
+  "name": "@autojob/application-diff",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Application Diff：提交前把「系统做了哪些转换」完整摊给用户看",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@autojob/candidate-profile": "workspace:*",
+    "@autojob/core": "workspace:*",
+    "@autojob/form-mapper": "workspace:*",
+    "@autojob/form-schema": "workspace:*"
+  }
+}

@@ -39,6 +39,10 @@ export const SemanticTypeSchema = z.enum([
   'INTERNSHIP',
   'RESEARCH_EXPERIENCE',
   'PROJECT_EXPERIENCE',
+  /** 「项目简介」「项目描述」—— 只要背景与做了什么 */
+  'PROJECT_BRIEF',
+  /** 「主要成果」「个人贡献」—— 只要产出与量化结果 */
+  'PROJECT_ACHIEVEMENT',
   'COMPETITION_EXPERIENCE',
   'CAMPUS_ACTIVITY',
   'VOLUNTEER_EXPERIENCE',
@@ -104,6 +108,10 @@ const EXPERIENCE_TYPES: ReadonlySet<SemanticType> = new Set<SemanticType>([
   'INTERNSHIP',
   'RESEARCH_EXPERIENCE',
   'PROJECT_EXPERIENCE',
+  /** 「项目简介」「项目描述」—— 只要背景与做了什么 */
+  'PROJECT_BRIEF',
+  /** 「主要成果」「个人贡献」—— 只要产出与量化结果 */
+  'PROJECT_ACHIEVEMENT',
   'COMPETITION_EXPERIENCE',
   'CAMPUS_ACTIVITY',
   'VOLUNTEER_EXPERIENCE',
@@ -141,6 +149,9 @@ export const SEMANTIC_TO_EXPERIENCE_TARGET: Readonly<Partial<Record<SemanticType
   INTERNSHIP: 'internship',
   RESEARCH_EXPERIENCE: 'research_experience',
   PROJECT_EXPERIENCE: 'project_experience',
+  // 细分类型仍映射到同一个目标栏，红线规则照常生效，区别只在填什么内容
+  PROJECT_BRIEF: 'project_experience',
+  PROJECT_ACHIEVEMENT: 'project_experience',
   COMPETITION_EXPERIENCE: 'competition_experience',
   CAMPUS_ACTIVITY: 'campus_activity',
   VOLUNTEER_EXPERIENCE: 'volunteer_experience',

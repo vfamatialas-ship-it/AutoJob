@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { classifyField, summarize } from '../src/classifier.js';
 import { confidenceAction } from '../src/form-field.js';
-import { isSensitiveType } from '../src/semantic-type.js';
+import { SEMANTIC_TO_EXPERIENCE_TARGET, isSensitiveType } from '../src/semantic-type.js';
 import type { RawField } from '../src/raw-field.js';
 
 /** 构造 RawField 的便捷函数，默认走最理想的 label[for] 路径 */
@@ -61,9 +61,17 @@ describe('核心难点：科研 vs 项目', () => {
     expect(classify('项目经历').semanticType).toBe('PROJECT_EXPERIENCE');
   });
 
-  it('「项目简介」「主要成果」都归入项目', () => {
-    expect(classify('项目简介').semanticType).toBe('PROJECT_EXPERIENCE');
-    expect(classify('主要成果').semanticType).toBe('PROJECT_EXPERIENCE');
+  it('「项目简介」与「主要成果」细分为两种语义，避免两栏填同样内容', () => {
+    // 都属于项目栏（映射目标相同，红线照常生效），但要填的侧面不同
+    expect(classify('项目简介').semanticType).toBe('PROJECT_BRIEF');
+    expect(classify('项目描述').semanticType).toBe('PROJECT_BRIEF');
+    expect(classify('主要成果').semanticType).toBe('PROJECT_ACHIEVEMENT');
+    expect(classify('个人贡献').semanticType).toBe('PROJECT_ACHIEVEMENT');
+  });
+
+  it('细分类型仍映射到 project_experience，红线不受影响', () => {
+    expect(SEMANTIC_TO_EXPERIENCE_TARGET['PROJECT_BRIEF']).toBe('project_experience');
+    expect(SEMANTIC_TO_EXPERIENCE_TARGET['PROJECT_ACHIEVEMENT']).toBe('project_experience');
   });
 
   it('科研与项目的判定都达到自动填写阈值', () => {

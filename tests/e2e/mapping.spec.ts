@@ -160,14 +160,28 @@ test.describe('C 公司 · 三栏分开 + 字数限制', () => {
     expect(mappingFor(plan, '#c-honor')?.sourceRecordIds).toEqual(['aw-honor-excellent']);
   });
 
-  test('100 字限制的项目简介超长，转人工等待压缩版本', async ({ page }) => {
+  test('100 字限制的项目简介自动压缩填入（M6 起不再转人工）', async ({ page }) => {
     const plan = await planFor(page, '/mock_company_c/apply.html');
     const brief = mappingFor(plan, '#c-project-brief');
 
-    expect(brief?.status).toBe('ask_user');
-    expect(brief?.warnings.some((item) => item.code === 'CONTENT_TOO_LONG')).toBe(true);
-    // 绝不截断
-    expect(brief?.value).toBe('');
+    expect(brief?.status).toBe('filled');
+    expect(brief?.value.length).toBeGreaterThan(0);
+    expect(brief?.value.length).toBeLessThanOrEqual(100);
+    // 压缩是 warn 级而非阻断级 —— 内容填得进去，只是请用户核对
+    expect(brief?.warnings.some((item) => item.code === 'CONTENT_COMPRESSED')).toBe(true);
+    // 绝不截断句子
+    expect(brief?.value).not.toMatch(/[，、]$/);
+  });
+
+  test('项目简介与主要成果填入不同侧面的内容，不重复', async ({ page }) => {
+    const plan = await planFor(page, '/mock_company_c/apply.html');
+
+    const brief = mappingFor(plan, '#c-project-brief');
+    const achievement = mappingFor(plan, '#c-achievement');
+
+    expect(brief?.field.semanticType).toBe('PROJECT_BRIEF');
+    expect(achievement?.field.semanticType).toBe('PROJECT_ACHIEVEMENT');
+    expect(brief?.value).not.toBe(achievement?.value);
   });
 
   test('内推码字段因无可用内推码而留空', async ({ page }) => {

@@ -16,7 +16,11 @@
       "@autojob/browser": ["packages/browser/src/index.ts"],
       "@autojob/browser/*": ["packages/browser/src/*"],
       "@autojob/database": ["packages/database/src/index.ts"],
-      "@autojob/database/*": ["packages/database/src/*"]
+      "@autojob/database/*": ["packages/database/src/*"],
+      "@autojob/content-adapter": ["packages/content-adapter/src/index.ts"],
+      "@autojob/content-adapter/*": ["packages/content-adapter/src/*"],
+      "@autojob/application-diff": ["packages/application-diff/src/index.ts"],
+      "@autojob/application-diff/*": ["packages/application-diff/src/*"]
     }
   },
   "include": [

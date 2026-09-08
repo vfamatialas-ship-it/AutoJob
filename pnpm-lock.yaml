@@ -158,6 +158,9 @@ importers:
 
   apps/cli:
     dependencies:
+      '@autojob/application-diff':
+        specifier: workspace:*
+        version: link:../../packages/application-diff
       '@autojob/browser':
         specifier: workspace:*
         version: link:../../packages/browser
@@ -179,6 +182,21 @@ importers:
       commander:
         specifier: ^12.1.0
         version: 12.1.0
+
+  packages/application-diff:
+    dependencies:
+      '@autojob/candidate-profile':
+        specifier: workspace:*
+        version: link:../candidate-profile
+      '@autojob/core':
+        specifier: workspace:*
+        version: link:../core
+      '@autojob/form-mapper':
+        specifier: workspace:*
+        version: link:../form-mapper
+      '@autojob/form-schema':
+        specifier: workspace:*
+        version: link:../form-schema
 
   packages/browser:
     dependencies:
@@ -204,6 +222,15 @@ importers:
         specifier: ^3.24.1
         version: 3.25.76
 
+  packages/content-adapter:
+    dependencies:
+      '@autojob/candidate-profile':
+        specifier: workspace:*
+        version: link:../candidate-profile
+      '@autojob/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/core: {}
 
   packages/database:
@@ -223,6 +250,9 @@ importers:
       '@autojob/candidate-profile':
         specifier: workspace:*
         version: link:../candidate-profile
+      '@autojob/content-adapter':
+        specifier: workspace:*
+        version: link:../content-adapter
       '@autojob/core':
         specifier: workspace:*
         version: link:../core
