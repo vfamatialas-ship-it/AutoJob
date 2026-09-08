@@ -1,0 +1,113 @@
+/* Mock 招聘站共用样式。刻意模仿国内招聘系统的常见排版。 */
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  margin: 0;
+  background: #f5f6f8;
+  color: #222;
+  line-height: 1.6;
+}
+header {
+  background: #1f4e9c;
+  color: #fff;
+  padding: 18px 28px;
+}
+header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  opacity: 0.85;
+}
+main {
+  max-width: 860px;
+  margin: 24px auto 64px;
+  padding: 0 16px;
+}
+fieldset {
+  background: #fff;
+  border: 1px solid #e2e5ea;
+  border-radius: 6px;
+  margin: 0 0 20px;
+  padding: 18px 22px 22px;
+}
+legend {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f4e9c;
+  padding: 0 8px;
+}
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 14px 0;
+}
+.row > .field-name,
+.row > label {
+  flex: 0 0 140px;
+  padding-top: 6px;
+  font-size: 14px;
+  color: #444;
+}
+.req::after {
+  content: ' *';
+  color: #d93025;
+}
+input[type='text'],
+input[type='tel'],
+input[type='email'],
+input[type='url'],
+input[type='number'],
+input[type='date'],
+select,
+textarea {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid #cfd4dc;
+  border-radius: 4px;
+  font: inherit;
+  background: #fff;
+}
+textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+.hint {
+  font-size: 12px;
+  color: #8a8f98;
+  margin: 4px 0 0 152px;
+}
+.actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+}
+button {
+  padding: 9px 22px;
+  border: none;
+  border-radius: 4px;
+  font: inherit;
+  cursor: pointer;
+}
+button[type='submit'] {
+  background: #1f4e9c;
+  color: #fff;
+}
+button.secondary {
+  background: #fff;
+  border: 1px solid #cfd4dc;
+}
+.notice {
+  background: #fff8e6;
+  border: 1px solid #f0d999;
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 20px;
+}

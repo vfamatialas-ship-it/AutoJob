@@ -1,0 +1,13 @@
+{
+  "name": "@autojob/cli",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "AutoJob 命令行入口",
+  "bin": {
+    "autojob": "./src/index.ts"
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  }
+}

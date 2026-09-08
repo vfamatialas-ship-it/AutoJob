@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "types": ["node"],
+    "paths": {
+      "@autojob/core": ["packages/core/src/index.ts"],
+      "@autojob/core/*": ["packages/core/src/*"],
+      "@autojob/candidate-profile": ["packages/candidate-profile/src/index.ts"],
+      "@autojob/candidate-profile/*": ["packages/candidate-profile/src/*"],
+      "@autojob/form-schema": ["packages/form-schema/src/index.ts"],
+      "@autojob/form-schema/*": ["packages/form-schema/src/*"],
+      "@autojob/form-mapper": ["packages/form-mapper/src/index.ts"],
+      "@autojob/form-mapper/*": ["packages/form-mapper/src/*"]
+    }
+  },
+  "include": [
+    "apps/*/src/**/*.ts",
+    "apps/*/tests/**/*.ts",
+    "packages/*/src/**/*.ts",
+    "packages/*/tests/**/*.ts",
+    "packages/adapters/*/src/**/*.ts",
+    "packages/adapters/*/tests/**/*.ts",
+    "tests/**/*.ts",
+    "vitest.config.ts",
+    "eslint.config.js"
+  ],
+  "exclude": ["node_modules", "**/dist"]
+}

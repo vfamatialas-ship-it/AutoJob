@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>D 公司校园招聘 - 信息登记</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+    <style>
+      .combo {
+        position: relative;
+        flex: 1;
+      }
+      .combo-input {
+        width: 100%;
+        padding: 7px 10px;
+        border: 1px solid #cfd4dc;
+        border-radius: 4px;
+        background: #fff;
+        cursor: pointer;
+        font: inherit;
+        text-align: left;
+      }
+      .combo-list {
+        display: none;
+        position: absolute;
+        z-index: 10;
+        left: 0;
+        right: 0;
+        margin-top: 2px;
+        background: #fff;
+        border: 1px solid #cfd4dc;
+        border-radius: 4px;
+        max-height: 200px;
+        overflow: auto;
+        list-style: none;
+        padding: 4px 0;
+      }
+      .combo.open .combo-list {
+        display: block;
+      }
+      .combo-list li {
+        padding: 7px 12px;
+        cursor: pointer;
+      }
+      .combo-list li:hover {
+        background: #eef3fb;
+      }
+      .choice-group {
+        flex: 1;
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        padding-top: 6px;
+      }
+      .choice-group label {
+        flex: none;
+        padding: 0;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>D 公司 · 校园招聘</h1>
+      <p>岗位：运动规划算法工程师</p>
+    </header>
+
+    <main>
+      <!--
+        本站刁难点：本站几乎不用原生控件 —— 这才是真实招聘网站的常态。
+        1. 学历是自定义下拉（div 模拟），选项要点开才渲染，Playwright 不能直接 selectOption
+        2. 学校字段是 autocomplete，要输入后等待候选列表出现再点选
+        3. 性别是 radio，是否接受调剂是 checkbox
+        4. 毕业时间是原生 date，格式必须 YYYY-MM-DD
+      -->
+      <div class="notice">本表单使用自定义控件，请点击选择。</div>
+
+      <form id="widget-form" action="/mock_widgets/success.html" method="get">
+        <fieldset>
+          <legend>基本信息</legend>
+
+          <div class="row">
+            <label class="req" for="w-name">姓名</label>
+            <input type="text" id="w-name" name="w-name" />
+          </div>
+
+          <div class="row">
+            <span class="field-name req">性别</span>
+            <div class="choice-group" id="w-gender-group">
+              <label><input type="radio" name="w-gender" value="男" /> 男</label>
+              <label><input type="radio" name="w-gender" value="女" /> 女</label>
+            </div>
+          </div>
+
+          <div class="row">
+            <label class="req" for="w-graduation">毕业时间</label>
+            <input type="date" id="w-graduation" name="w-graduation" />
+          </div>
+          <p class="hint">格式：YYYY-MM-DD</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>教育背景</legend>
+
+          <!-- 自定义下拉：非原生 select -->
+          <div class="row">
+            <span class="field-name req">最高学历</span>
+            <div class="combo" id="w-degree-combo">
+              <button type="button" class="combo-input" id="w-degree-trigger" aria-label="最高学历">
+                请选择学历
+              </button>
+              <ul class="combo-list" id="w-degree-list"></ul>
+              <input type="hidden" id="w-degree" name="w-degree" />
+            </div>
+          </div>
+
+          <!-- autocomplete：输入后异步出候选 -->
+          <div class="row">
+            <label class="req" for="w-school">毕业院校</label>
+            <div class="combo" id="w-school-combo">
+              <input
+                type="text"
+                class="combo-input"
+                id="w-school"
+                name="w-school"
+                autocomplete="off"
+                placeholder="输入院校名称搜索"
+              />
+              <ul class="combo-list" id="w-school-list"></ul>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>求职意向</legend>
+
+          <div class="row">
+            <span class="field-name">可接受的工作地点</span>
+            <div class="choice-group" id="w-city-group">
+              <label><input type="checkbox" name="w-city" value="北京" /> 北京</label>
+              <label><input type="checkbox" name="w-city" value="上海" /> 上海</label>
+              <label><input type="checkbox" name="w-city" value="深圳" /> 深圳</label>
+              <label><input type="checkbox" name="w-city" value="杭州" /> 杭州</label>
+              <label><input type="checkbox" name="w-city" value="西安" /> 西安</label>
+            </div>
+          </div>
+
+          <div class="row">
+            <span class="field-name">是否接受岗位调剂</span>
+            <div class="choice-group" id="w-transfer-group">
+              <label><input type="radio" name="w-transfer" value="是" /> 是</label>
+              <label><input type="radio" name="w-transfer" value="否" /> 否</label>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit" id="submit-btn">提交</button>
+        </div>
+      </form>
+    </main>
+
+    <script>
+      // 自定义下拉：选项在首次点击时才渲染，模拟真实站点的懒加载
+      const DEGREES = ['专科', '本科', '硕士', '博士'];
+      const combo = document.getElementById('w-degree-combo');
+      const trigger = document.getElementById('w-degree-trigger');
+      const list = document.getElementById('w-degree-list');
+      const hidden = document.getElementById('w-degree');
+
+      trigger.addEventListener('click', () => {
+        if (list.children.length === 0) {
+          for (const degree of DEGREES) {
+            const item = document.createElement('li');
+            item.textContent = degree;
+            item.dataset.value = degree;
+            item.addEventListener('click', () => {
+              hidden.value = degree;
+              trigger.textContent = degree;
+              combo.classList.remove('open');
+            });
+            list.appendChild(item);
+          }
+        }
+        combo.classList.toggle('open');
+      });
+
+      // autocomplete：输入 >= 2 字后延迟 250ms 出候选，模拟网络请求
+      const SCHOOLS = [
+        '西安交通大学',
+        '西安电子科技大学',
+        '西北工业大学',
+        '上海交通大学',
+        '北京交通大学',
+      ];
+      const schoolCombo = document.getElementById('w-school-combo');
+      const schoolInput = document.getElementById('w-school');
+      const schoolList = document.getElementById('w-school-list');
+      let timer;
+
+      schoolInput.addEventListener('input', () => {
+        clearTimeout(timer);
+        const keyword = schoolInput.value.trim();
+        if (keyword.length < 2) {
+          schoolCombo.classList.remove('open');
+          return;
+        }
+        timer = setTimeout(() => {
+          schoolList.innerHTML = '';
+          for (const school of SCHOOLS.filter((s) => s.includes(keyword))) {
+            const item = document.createElement('li');
+            item.textContent = school;
+            item.addEventListener('click', () => {
+              schoolInput.value = school;
+              schoolCombo.classList.remove('open');
+            });
+            schoolList.appendChild(item);
+          }
+          schoolCombo.classList.toggle('open', schoolList.children.length > 0);
+        }, 250);
+      });
+    </script>
+  </body>
+</html>

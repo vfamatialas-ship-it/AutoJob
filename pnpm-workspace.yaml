@@ -1,0 +1,7 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+  - 'packages/adapters/*'
+# esbuild 是 tsx / vitest 的底层依赖，需要执行安装脚本下载对应平台的二进制
+allowBuilds:
+  esbuild: true

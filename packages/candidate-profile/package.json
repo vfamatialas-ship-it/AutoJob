@@ -1,0 +1,15 @@
+{
+  "name": "@autojob/candidate-profile",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Candidate Profile 数据模型：候选人完整事实的唯一来源",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "zod": "^3.24.1",
+    "@autojob/core": "workspace:*"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@autojob/form-mapper",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Field Mapping Engine：把 Candidate Profile 映射到网页字段，并守住语义红线",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@autojob/candidate-profile": "workspace:*",
+    "@autojob/core": "workspace:*",
+    "@autojob/form-schema": "workspace:*",
+    "zod": "^3.24.1"
+  }
+}

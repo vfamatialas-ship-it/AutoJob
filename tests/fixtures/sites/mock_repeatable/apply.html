@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>E 公司校园招聘 - 简历录入</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+    <style>
+      .section-item {
+        border: 1px dashed #cfd4dc;
+        border-radius: 5px;
+        padding: 12px 16px 4px;
+        margin-bottom: 12px;
+        background: #fafbfc;
+      }
+      .section-item h4 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        color: #666;
+      }
+      .add-btn {
+        background: #fff;
+        border: 1px dashed #1f4e9c;
+        color: #1f4e9c;
+        width: 100%;
+        padding: 8px;
+      }
+      .remove-btn {
+        background: none;
+        border: none;
+        color: #d93025;
+        font-size: 12px;
+        padding: 0 0 8px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>E 公司 · 校园招聘</h1>
+      <p>岗位：具身智能研究员</p>
+    </header>
+
+    <main>
+      <!--
+        本站刁难点：Repeatable Section —— 每段经历都要点「添加一条」动态生成一组字段。
+        1. 初始状态各分区都是 0 条，必须先点添加才有输入框
+        2. 新增的 DOM 在点击后才插入，selector 带索引（#edu-0-school / #edu-1-school）
+        3. 教育、科研、项目三个分区独立计数
+        4. 可以删除某一条，索引不重排 —— 模拟真实站点的常见实现，专门制造索引陷阱
+      -->
+      <div class="notice">请通过「添加一条」按钮录入多段经历。</div>
+
+      <form id="repeat-form" action="/mock_repeatable/success.html" method="get">
+        <fieldset>
+          <legend>教育经历</legend>
+          <div id="edu-container"></div>
+          <button type="button" class="add-btn" id="add-edu">+ 添加教育经历</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>科研经历</legend>
+          <div id="research-container"></div>
+          <button type="button" class="add-btn" id="add-research">+ 添加科研经历</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>项目经历</legend>
+          <div id="project-container"></div>
+          <button type="button" class="add-btn" id="add-project">+ 添加项目经历</button>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit" id="submit-btn">提交</button>
+        </div>
+      </form>
+    </main>
+
+    <script>
+      // 每个分区独立计数，且删除后不重排索引 —— 真实站点常见实现
+      const counters = { edu: 0, research: 0, project: 0 };
+
+      const TEMPLATES = {
+        edu: (i) => `
+          <h4>教育经历 ${i + 1}</h4>
+          <div class="row"><label for="edu-${i}-school">学校名称</label>
+            <input type="text" id="edu-${i}-school" name="edu-${i}-school"></div>
+          <div class="row"><label for="edu-${i}-major">专业</label>
+            <input type="text" id="edu-${i}-major" name="edu-${i}-major"></div>
+          <div class="row"><label for="edu-${i}-degree">学历</label>
+            <select id="edu-${i}-degree" name="edu-${i}-degree">
+              <option value="">请选择</option><option>本科</option><option>硕士</option><option>博士</option>
+            </select></div>
+          <button type="button" class="remove-btn" data-remove="edu-${i}">删除这条</button>`,
+        research: (i) => `
+          <h4>科研经历 ${i + 1}</h4>
+          <div class="row"><label for="research-${i}-name">课题名称</label>
+            <input type="text" id="research-${i}-name" name="research-${i}-name"></div>
+          <div class="row"><label for="research-${i}-role">承担角色</label>
+            <input type="text" id="research-${i}-role" name="research-${i}-role"></div>
+          <div class="row"><label for="research-${i}-desc">研究内容</label>
+            <textarea id="research-${i}-desc" name="research-${i}-desc"></textarea></div>
+          <button type="button" class="remove-btn" data-remove="research-${i}">删除这条</button>`,
+        project: (i) => `
+          <h4>项目经历 ${i + 1}</h4>
+          <div class="row"><label for="project-${i}-name">项目名称</label>
+            <input type="text" id="project-${i}-name" name="project-${i}-name"></div>
+          <div class="row"><label for="project-${i}-desc">项目描述</label>
+            <textarea id="project-${i}-desc" name="project-${i}-desc" maxlength="300"></textarea></div>
+          <button type="button" class="remove-btn" data-remove="project-${i}">删除这条</button>`,
+      };
+
+      function addItem(kind) {
+        const index = counters[kind]++;
+        const container = document.getElementById(`${kind}-container`);
+        const item = document.createElement('div');
+        item.className = 'section-item';
+        item.id = `${kind}-item-${index}`;
+        item.innerHTML = TEMPLATES[kind](index);
+        container.appendChild(item);
+
+        item.querySelector('[data-remove]').addEventListener('click', () => item.remove());
+      }
+
+      document.getElementById('add-edu').addEventListener('click', () => addItem('edu'));
+      document.getElementById('add-research').addEventListener('click', () => addItem('research'));
+      document.getElementById('add-project').addEventListener('click', () => addItem('project'));
+    </script>
+  </body>
+</html>

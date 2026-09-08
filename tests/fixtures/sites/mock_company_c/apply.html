@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>C 公司秋季校园招聘 - 申请表</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>C 公司 · 2027 秋季校园招聘</h1>
+      <p>岗位：VLA 算法工程师</p>
+    </header>
+
+    <main>
+      <!--
+        本站刁难点：
+        1. 奖学金 / 学科竞赛获奖 / 荣誉称号 三栏严格分开，混填即为错误
+        2. 项目简介限 100 字，主要成果限 300 字 —— 考察内容自适应
+        3. 手机号字段只有 placeholder，没有任何 label
+        4. 有内推码字段
+      -->
+      <div class="notice">项目简介限 100 字以内，主要成果限 300 字以内，超出将无法提交。</div>
+
+      <form id="application-form" action="/mock_company_c/success.html" method="get">
+        <fieldset>
+          <legend>申请人信息</legend>
+
+          <div class="row">
+            <label class="req" for="c-name">姓名</label>
+            <input type="text" id="c-name" name="c-name" />
+          </div>
+
+          <!-- 无 label，仅靠 placeholder 表达语义 -->
+          <div class="row">
+            <span class="field-name"></span>
+            <input type="tel" id="c-phone" name="c-phone" placeholder="请输入手机号" />
+          </div>
+
+          <div class="row">
+            <label for="c-referral">内推码</label>
+            <input type="text" id="c-referral" name="c-referral" placeholder="选填" />
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>科研与项目</legend>
+
+          <div class="row">
+            <label for="c-research">科研经历</label>
+            <textarea id="c-research" name="c-research"></textarea>
+          </div>
+
+          <div class="row">
+            <label for="c-project-brief">项目简介</label>
+            <textarea id="c-project-brief" name="c-project-brief" maxlength="100"></textarea>
+          </div>
+          <p class="hint">限 100 字</p>
+
+          <div class="row">
+            <label for="c-achievement">主要成果</label>
+            <textarea id="c-achievement" name="c-achievement" maxlength="300"></textarea>
+          </div>
+          <p class="hint">限 300 字</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>获奖与荣誉</legend>
+
+          <div class="row">
+            <label for="c-scholarship">奖学金</label>
+            <textarea id="c-scholarship" name="c-scholarship"></textarea>
+          </div>
+          <p class="hint">仅填写奖学金，竞赛获奖请填在下一栏</p>
+
+          <div class="row">
+            <label for="c-competition">学科竞赛获奖</label>
+            <textarea id="c-competition" name="c-competition"></textarea>
+          </div>
+
+          <div class="row">
+            <label for="c-honor">荣誉称号</label>
+            <textarea id="c-honor" name="c-honor"></textarea>
+          </div>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit" id="submit-btn">确认提交</button>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

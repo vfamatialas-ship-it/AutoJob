@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>B 公司校园招聘 - 简历填写</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>B 公司 · 校园招聘</h1>
+      <p>岗位：具身智能算法工程师</p>
+    </header>
+
+    <main>
+      <!--
+        本站刁难点：
+        1. 科研栏叫「课题经历」，项目栏叫「研究项目」—— 考察同义词识别，
+           且「研究项目」字面上像科研，实际是项目栏，容易分类错
+        2. 「实践经历」语义天然模糊（实习？社团？科研？），必须触发 WAITING_USER，不许猜
+        3. GitHub 字段只有 aria-label，没有可见文字
+        4. 奖学金与竞赛分为两栏
+      -->
+      <div class="notice">本表单区分课题经历与研究项目，请分别填写。</div>
+
+      <form id="resume-form" action="/mock_company_b/success.html" method="get">
+        <fieldset>
+          <legend>个人信息</legend>
+
+          <div class="row">
+            <label class="req" for="applicant-name">真实姓名</label>
+            <input type="text" id="applicant-name" name="applicant-name" />
+          </div>
+
+          <div class="row">
+            <label class="req" for="contact-phone">联系电话</label>
+            <input type="tel" id="contact-phone" name="contact-phone" />
+          </div>
+
+          <div class="row">
+            <label class="req" for="contact-email">Email</label>
+            <input type="email" id="contact-email" name="contact-email" />
+          </div>
+
+          <!-- 只有 aria-label，页面上看不到文字标签 -->
+          <div class="row">
+            <span class="field-name"></span>
+            <input
+              type="url"
+              id="gh"
+              name="gh"
+              aria-label="GitHub 地址"
+              placeholder="https://github.com/yourname"
+            />
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>教育信息</legend>
+
+          <div class="row">
+            <label class="req" for="univ">就读学校</label>
+            <input type="text" id="univ" name="univ" />
+          </div>
+
+          <div class="row">
+            <label for="gpa">绩点 / GPA</label>
+            <input type="text" id="gpa" name="gpa" />
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>经历</legend>
+
+          <div class="row">
+            <label for="topic-exp">课题经历</label>
+            <textarea id="topic-exp" name="topic-exp"></textarea>
+          </div>
+          <p class="hint">请填写参与的科研课题、研究方向及个人贡献</p>
+
+          <div class="row">
+            <label for="research-proj">研究项目</label>
+            <textarea id="research-proj" name="research-proj"></textarea>
+          </div>
+          <p class="hint">请填写具体项目名称、技术方案与成果</p>
+
+          <!-- 语义模糊：可能指实习、社团、科研或志愿服务 -->
+          <div class="row">
+            <label for="practice-exp">实践经历</label>
+            <textarea id="practice-exp" name="practice-exp"></textarea>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>获奖情况</legend>
+
+          <div class="row">
+            <label for="scholarship">奖学金情况</label>
+            <textarea id="scholarship" name="scholarship"></textarea>
+          </div>
+
+          <div class="row">
+            <label for="competition">竞赛获奖</label>
+            <textarea id="competition" name="competition"></textarea>
+          </div>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit" id="submit-btn">提交简历</button>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

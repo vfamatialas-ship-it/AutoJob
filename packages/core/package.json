@@ -1,0 +1,11 @@
+{
+  "name": "@autojob/core",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "AutoJob 通用内核：Result、结构化错误码、PII 脱敏、日志、Run ID",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

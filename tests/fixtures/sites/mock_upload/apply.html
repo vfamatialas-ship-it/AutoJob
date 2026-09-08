@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>F 公司校园招聘 - 附件上传</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+    <style>
+      .upload-box {
+        flex: 1;
+      }
+      .upload-box input[type='file'] {
+        display: none;
+      }
+      .upload-trigger {
+        display: inline-block;
+        padding: 7px 16px;
+        border: 1px solid #1f4e9c;
+        color: #1f4e9c;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        background: #fff;
+      }
+      .file-name {
+        margin-left: 10px;
+        font-size: 13px;
+        color: #444;
+      }
+      .file-error {
+        color: #d93025;
+        font-size: 12px;
+        margin-top: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>F 公司 · 校园招聘</h1>
+      <p>岗位：机器人算法工程师</p>
+    </header>
+
+    <main>
+      <!--
+        本站刁难点：三个上传位，每个的格式与大小限制都不同 —— 这是 AssetSelector 的用武之地。
+        1. 简历：仅 PDF，≤ 2MB
+        2. 成绩单：PDF 或图片，≤ 5MB
+        3. 作品集：仅 PDF，≤ 10MB
+        4. input[type=file] 被 CSS 隐藏，页面上只有 <label> 触发器 —— 常见实现，
+           Playwright 必须用 setInputFiles 直接操作隐藏的 input，不能去点按钮
+        5. 前端会真的校验格式与大小并显示错误
+      -->
+      <div class="notice">请上传相关附件，注意各附件的格式与大小限制。</div>
+
+      <form id="upload-form" action="/mock_upload/success.html" method="get">
+        <fieldset>
+          <legend>附件材料</legend>
+
+          <div class="row">
+            <span class="field-name req">个人简历</span>
+            <div class="upload-box">
+              <label class="upload-trigger" for="up-resume">选择文件</label>
+              <input type="file" id="up-resume" name="up-resume" accept=".pdf" data-max-mb="2" />
+              <span class="file-name" id="up-resume-name">未选择文件</span>
+              <div class="file-error" id="up-resume-error"></div>
+            </div>
+          </div>
+          <p class="hint">仅支持 PDF，大小不超过 2MB</p>
+
+          <div class="row">
+            <span class="field-name">成绩单</span>
+            <div class="upload-box">
+              <label class="upload-trigger" for="up-transcript">选择文件</label>
+              <input
+                type="file"
+                id="up-transcript"
+                name="up-transcript"
+                accept=".pdf,.jpg,.jpeg,.png"
+                data-max-mb="5"
+              />
+              <span class="file-name" id="up-transcript-name">未选择文件</span>
+              <div class="file-error" id="up-transcript-error"></div>
+            </div>
+          </div>
+          <p class="hint">支持 PDF / JPG / PNG，大小不超过 5MB</p>
+
+          <div class="row">
+            <span class="field-name">个人作品集</span>
+            <div class="upload-box">
+              <label class="upload-trigger" for="up-portfolio">选择文件</label>
+              <input type="file" id="up-portfolio" name="up-portfolio" accept=".pdf" data-max-mb="10" />
+              <span class="file-name" id="up-portfolio-name">未选择文件</span>
+              <div class="file-error" id="up-portfolio-error"></div>
+            </div>
+          </div>
+          <p class="hint">仅支持 PDF，大小不超过 10MB</p>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit" id="submit-btn">提交</button>
+        </div>
+      </form>
+    </main>
+
+    <script>
+      // 真实的前端校验：格式与大小不符会报错并清空，系统必须能读到错误
+      for (const id of ['up-resume', 'up-transcript', 'up-portfolio']) {
+        const input = document.getElementById(id);
+        const nameEl = document.getElementById(`${id}-name`);
+        const errorEl = document.getElementById(`${id}-error`);
+
+        input.addEventListener('change', () => {
+          errorEl.textContent = '';
+          const file = input.files[0];
+          if (!file) {
+            nameEl.textContent = '未选择文件';
+            return;
+          }
+
+          const allowed = input.accept.split(',').map((s) => s.trim().toLowerCase());
+          const ext = `.${file.name.split('.').pop().toLowerCase()}`;
+          const maxBytes = Number(input.dataset.maxMb) * 1024 * 1024;
+
+          if (!allowed.includes(ext)) {
+            errorEl.textContent = `不支持的文件格式 ${ext}，仅支持 ${input.accept}`;
+            input.value = '';
+            nameEl.textContent = '未选择文件';
+            return;
+          }
+          if (file.size > maxBytes) {
+            errorEl.textContent = `文件过大（${(file.size / 1024 / 1024).toFixed(1)}MB），上限 ${input.dataset.maxMb}MB`;
+            input.value = '';
+            nameEl.textContent = '未选择文件';
+            return;
+          }
+          nameEl.textContent = file.name;
+        });
+      }
+    </script>
+  </body>
+</html>

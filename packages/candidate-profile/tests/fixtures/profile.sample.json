@@ -1,0 +1,348 @@
+{
+  "_comment": "测试基准 Profile。结构取自真实简历，但手机号/邮箱/身份证/雇主名已脱敏。真实数据存在 gitignore 的 materials/ 下，不进仓库。",
+  "schemaVersion": 1,
+  "basicInfo": {
+    "name": "示例候选人",
+    "gender": "female",
+    "phone": "13800000000",
+    "email": "candidate@example.com",
+    "nationality": "中国",
+    "politicalStatus": "masses",
+    "expectedGraduationDate": "2027-06",
+    "availableDate": "2027-07"
+  },
+  "educations": [
+    {
+      "id": "edu-master",
+      "institution": "西安交通大学",
+      "college": "机械工程学院（机器人研究所）",
+      "degree": "机械工程 硕士",
+      "degreeType": "master",
+      "major": "机械工程",
+      "startDate": "2024-09",
+      "endDate": "2027-06",
+      "graduationDate": "2027-06",
+      "ranking": 1,
+      "rankingTotal": 100,
+      "coursework": ["机器人学", "机器学习", "深度学习", "多模态智能处理", "智能控制理论"],
+      "lab": "机器人研究所",
+      "description": "研究方向：机械臂 VLA-RL 模型、机器人智能控制、强化学习后训练"
+    },
+    {
+      "id": "edu-bachelor",
+      "institution": "西安交通大学",
+      "college": "钱学森学院",
+      "degree": "机械工程与工程力学 双学位（荣誉学位）",
+      "degreeType": "bachelor",
+      "major": "机械工程",
+      "secondMajor": "工程力学",
+      "startDate": "2020-09",
+      "endDate": "2024-06",
+      "graduationDate": "2024-06",
+      "coursework": [
+        "理论力学",
+        "材料力学",
+        "自动控制原理",
+        "计算机视觉基础",
+        "Python/C++ 程序设计"
+      ]
+    }
+  ],
+  "experiences": [
+    {
+      "id": "exp-underwater-vla",
+      "name": "面向复杂海底环境的水下双臂海洋垃圾捡取 VLA 算法研究",
+      "organization": "西安交通大学 机器人研究所",
+      "role": "课题负责人",
+      "startDate": "2024-09",
+      "endDate": "2026-06",
+      "experienceType": "research_project",
+      "organizationType": "university_lab",
+      "employmentRelation": "student",
+      "semanticTags": ["VLA", "水下机器人", "双臂协同", "强化学习"],
+      "descriptionCanonical": "研发全球首款适形水下作业航行器（CI-AUV），基于其搭载的水下双机械臂，在实验室搭建由沙石、鹅卵石及多类型海洋垃圾构成的近岸浅海模拟环境，研究多目标、长程、双臂协同条件下的垃圾自主感知、目标选择与连续抓取的 VLA 算法框架。",
+      "canonicalFacts": [
+        {
+          "id": "fact-uw-single-arm",
+          "statement": "单臂抓取成功率达到 90.4%",
+          "metrics": ["90.4%"],
+          "evidence": []
+        },
+        {
+          "id": "fact-uw-dual-arm",
+          "statement": "双臂抓取成功率达到 86.7%",
+          "metrics": ["86.7%"],
+          "evidence": []
+        },
+        {
+          "id": "fact-uw-sdk",
+          "statement": "基于双机械臂开发同构主臂遥操作系统，设计 lerobot 格式数据采集与策略部署系统",
+          "metrics": [],
+          "evidence": []
+        },
+        {
+          "id": "fact-uw-vision",
+          "statement": "研发可插拔式水下视觉增强模块，构建「原始 RGB → 水下增强/域适配 → 目标检测 → VLA 抓取」整体链路",
+          "metrics": [],
+          "evidence": []
+        },
+        {
+          "id": "fact-uw-generalization",
+          "statement": "训练机械臂学习目标数与随机空间布局，垃圾数量由 2→4→6 泛化，实现任务长度与数量泛化能力",
+          "metrics": ["2→4→6"],
+          "evidence": []
+        }
+      ],
+      "responsibilities": [
+        "机械臂 SDK 开发与同构主臂遥操作系统搭建",
+        "水下视觉域增强插件研发",
+        "单臂多目标抓取与顺序学习",
+        "双臂区域协同与任务分配"
+      ],
+      "technologies": ["π0.5", "ROS2", "lerobot", "强化学习", "双目视觉"],
+      "keywords": ["VLA", "具身智能", "水下机器人", "双臂协同"]
+    },
+    {
+      "id": "exp-internship-sorting",
+      "name": "双臂分拣装箱长程任务的 VLA-RL 系统搭建",
+      "organization": "某科技公司（脱敏）",
+      "role": "算法实习生",
+      "startDate": "2026-05",
+      "endDate": "2026-08",
+      "experienceType": "internship",
+      "organizationType": "company",
+      "employmentRelation": "intern",
+      "semanticTags": ["VLA-RL", "工业分拣", "长程任务"],
+      "descriptionCanonical": "面向工业打包/装箱场景，基于双臂机器人构建长程 VLA 操作系统，实现左右区域多盒抓取、装箱、纸箱折叠、旋转与封箱等 6 阶段长程任务。基于 π0.5 + RLinf 完成真机强化学习，并围绕长程任务中的阶段耦合、精细接触操作和多技能干扰进行模型与数据侧改造，并完成真机部署实验。",
+      "canonicalFacts": [
+        {
+          "id": "fact-sort-overall",
+          "statement": "双臂分拣装箱长程任务成功率由 0.03% 提升至 71.56%",
+          "metrics": ["0.03%", "71.56%"],
+          "evidence": []
+        },
+        {
+          "id": "fact-sort-subtask",
+          "statement": "将原始 6 阶段粗粒度任务细化为元动作后，装箱/旋转/封箱阶段成功率由 10.5% 提升至 56.3%",
+          "metrics": ["10.5%", "56.3%"],
+          "evidence": []
+        },
+        {
+          "id": "fact-sort-expert",
+          "statement": "采用技能专家化 + 阶段路由方式解耦抓取与盖盒动作，左右臂抓取成功率提升 30.2%，长程成功率提升 12.5%",
+          "metrics": ["30.2%", "12.5%"],
+          "evidence": []
+        },
+        {
+          "id": "fact-sort-rlinf",
+          "statement": "将 π0.5 模型接入 RLinf 训练框架，通过「真机失败分析 → 阶段定位 → 数据重构 → 重新训练」持续优化技能数据分布",
+          "metrics": [],
+          "evidence": []
+        }
+      ],
+      "responsibilities": ["子任务细粒度优化", "多层动作专家部署", "RLinf 元动作强化"],
+      "technologies": ["π0.5", "RLinf", "强化学习", "VLA"],
+      "keywords": ["具身智能", "VLA-RL", "长程任务", "真机部署"]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-open-kaka",
+      "name": "Open-kaka-robot 开源机械臂平台",
+      "role": "作者",
+      "startDate": "2025-06",
+      "endDate": "present",
+      "descriptionCanonical": "面向机械臂硬件设计、控制、仿真与具身智能的开源平台。",
+      "canonicalFacts": [
+        {
+          "id": "fact-kaka-open",
+          "statement": "以 MIT License 开源，覆盖硬件设计到 AI 应用的完整链路",
+          "metrics": [],
+          "evidence": ["https://github.com/vfamatialas-ship-it/Open-kaka-robot"]
+        }
+      ],
+      "techStack": ["Python", "ROS2", "仿真"],
+      "keywords": ["开源", "机械臂", "具身智能"],
+      "links": [
+        { "label": "GitHub", "url": "https://github.com/vfamatialas-ship-it/Open-kaka-robot" }
+      ]
+    }
+  ],
+  "awards": [
+    {
+      "id": "aw-national-scholarship",
+      "name": "国家奖学金",
+      "category": "scholarship",
+      "level": "national",
+      "issuer": "教育部",
+      "date": "2025-12",
+      "certificateAsset": "asset-cert-national-scholarship"
+    },
+    {
+      "id": "aw-first-class-scholarship",
+      "name": "一等学业奖学金",
+      "category": "scholarship",
+      "level": "university",
+      "date": "2024-11"
+    },
+    {
+      "id": "aw-corp-scholarship",
+      "name": "企业冠名奖学金（脱敏）",
+      "category": "scholarship",
+      "level": "university",
+      "date": "2025-11"
+    },
+    {
+      "id": "aw-honor-excellent",
+      "name": "优秀研究生",
+      "category": "honor",
+      "level": "university",
+      "date": "2025-09"
+    },
+    {
+      "id": "aw-comp-robot",
+      "name": "第十五届国际先进机器人及仿真技术大赛",
+      "category": "competition_award",
+      "level": "national",
+      "date": "2022-11",
+      "rank": "一等奖",
+      "description": "基于本科项目「基于柔顺机构的双驱动仿生水母设计」获奖。项目从模拟水母的运动特性和趋光功能出发，提出一款双驱动仿生水母：通过基于柔性机构的仿生鳍条实现水中扑动推进，通过管状折纸机构实现水下喷射推进，双驱动结构协同设计有效提升推进效率。本人负责仿生水母结构设计、结构仿真、嵌入式开发。"
+    },
+    {
+      "id": "aw-comp-electronic",
+      "name": "第二十届中国研究生电子设计竞赛全国总决赛",
+      "category": "competition_award",
+      "level": "national",
+      "date": "2025-09",
+      "rank": "二等奖",
+      "description": "基于「水下探测处置一体化自主作业机器人」项目。该项目研发全球首款适形水下作业航行器（CI-AUV），融合 AUV 流体外形与 ROV 双机械臂设计，实现远距离高速航行与智能自主作业。本人负责：1）多模态环境感知与目标识别，结合声纳大模型微调与双目视觉系统，提升非结构化浑浊水域中的目标识别准确率；2）底层硬件与系统联合调试，参与整机外形及推进器布局的动力学优化设计。"
+    },
+    {
+      "id": "aw-comp-energy",
+      "name": "第十二届中国研究生能源装备创新设计大赛",
+      "category": "competition_award",
+      "level": "national",
+      "date": "2025-09",
+      "rank": "二等奖",
+      "description": "基于「水下探测处置一体化自主作业机器人」项目。针对 UUV 无法水下自主作业、ROV 无法水下高速航行的痛点，设计研制流线型机身带机械臂的水下航行器，兼顾高速航行与自主作业能力。"
+    },
+    {
+      "id": "aw-comp-ai",
+      "name": "「华为杯」第七届中国研究生人工智能创新大赛全国总决赛",
+      "category": "competition_award",
+      "level": "national",
+      "date": "2025-10",
+      "rank": "二等奖",
+      "description": "基于「水下航行器双机械臂精确协同控制」项目。聚焦双机械臂协同精度不足、抗环境扰动弱的瓶颈，构建「动力学建模—模型驱动—算法优化」技术体系，结合 VLA 大模型与强化学习，实现双机械臂在 3 节水流扰动下的稳定协同作业。本人负责机械臂结构设计、运动学正逆解、VLA 模型搭建。"
+    }
+  ],
+  "skills": [
+    {
+      "id": "skill-vla",
+      "name": "VLA 模型",
+      "category": "machine_learning",
+      "level": "expert",
+      "evidence": ["exp-underwater-vla", "exp-internship-sorting"],
+      "keywords": ["Vision-Language-Action", "pi0.5", "π0.5"]
+    },
+    {
+      "id": "skill-rl",
+      "name": "强化学习",
+      "category": "machine_learning",
+      "level": "proficient",
+      "evidence": ["exp-internship-sorting"],
+      "keywords": ["RL", "RLinf", "reinforcement learning"]
+    },
+    {
+      "id": "skill-ros2",
+      "name": "ROS2",
+      "category": "robotics",
+      "level": "proficient",
+      "evidence": ["exp-underwater-vla", "proj-open-kaka"],
+      "keywords": ["ros", "ros2"]
+    },
+    {
+      "id": "skill-python",
+      "name": "Python",
+      "category": "programming",
+      "level": "proficient",
+      "evidence": ["exp-underwater-vla", "exp-internship-sorting", "proj-open-kaka"]
+    },
+    {
+      "id": "skill-cpp",
+      "name": "C++",
+      "category": "programming",
+      "level": "familiar",
+      "evidence": ["edu-bachelor"]
+    }
+  ],
+  "links": [
+    {
+      "semanticType": "github",
+      "url": "https://github.com/vfamatialas-ship-it",
+      "label": "GitHub",
+      "primaryForHomepage": true,
+      "description": "机械臂、电机控制、仿真、强化学习与具身智能的开源实验室"
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset-resume-robotics-zh",
+      "name": "中文简历-机器人算法",
+      "type": "resume",
+      "path": "materials/简历/示例-中文机器人算法.pdf",
+      "language": "zh",
+      "tags": ["robotics", "vla"],
+      "mimeType": "application/pdf",
+      "fileSize": 223674
+    },
+    {
+      "id": "asset-portfolio",
+      "name": "作品展示",
+      "type": "portfolio",
+      "path": "materials/作品集/示例-作品展示.pdf",
+      "language": "zh",
+      "tags": ["robotics"],
+      "mimeType": "application/pdf",
+      "fileSize": 2100819
+    },
+    {
+      "id": "asset-cert-national-scholarship",
+      "name": "国家奖学金证书",
+      "type": "award_certificate",
+      "path": "materials/证书/奖学金/示例-国家奖学金.jpg",
+      "language": "zh",
+      "mimeType": "image/jpeg",
+      "fileSize": 159056
+    }
+  ],
+  "resumeVersions": [
+    {
+      "id": "rv-robotics",
+      "name": "机器人算法版",
+      "targetRoles": ["机器人", "具身智能", "VLA", "算法"],
+      "assetId": "asset-resume-robotics-zh",
+      "contentPreference": "突出 VLA-RL、双臂协同、真机部署"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-transfer",
+      "canonicalQuestion": "是否接受岗位调剂",
+      "semanticType": "accept_position_transfer",
+      "answerType": "boolean",
+      "answer": "false",
+      "confidence": 1,
+      "observedPhrasings": ["是否服从职位调剂？", "是否接受岗位调配"]
+    },
+    {
+      "id": "q-english",
+      "canonicalQuestion": "英语等级",
+      "semanticType": "english_level",
+      "answerType": "text",
+      "answer": "CET-4",
+      "confidence": 1
+    }
+  ],
+  "referralCodes": []
+}

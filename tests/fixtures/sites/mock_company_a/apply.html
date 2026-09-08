@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>A 公司 2027 届校园招聘 - 在线申请</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>A 公司 · 2027 届校园招聘</h1>
+      <p>岗位：机器人算法工程师</p>
+    </header>
+
+    <main>
+      <!--
+        本站刁难点：
+        1. 没有「科研经历」栏目 —— 科研课题只能降级进项目经历，系统必须产生 warning
+        2. 奖项只有一个合并的「荣誉奖励」栏
+        3. 手机号与邮箱用相邻文本节点作 label，没有 <label for>
+      -->
+      <div class="notice">请如实填写以下信息，带 * 为必填项。</div>
+
+      <form id="apply-form" action="/mock_company_a/success.html" method="get">
+        <fieldset>
+          <legend>基本信息</legend>
+
+          <div class="row">
+            <label class="req" for="name">姓名</label>
+            <input type="text" id="name" name="name" />
+          </div>
+
+          <!-- 无 for 属性，label 是相邻 span -->
+          <div class="row">
+            <span class="field-name req">手机号码</span>
+            <input type="tel" id="mobile" name="mobile" />
+          </div>
+
+          <div class="row">
+            <span class="field-name req">电子邮箱</span>
+            <input type="email" id="mail" name="mail" />
+          </div>
+
+          <div class="row">
+            <label for="homepage">个人主页</label>
+            <input type="url" id="homepage" name="homepage" />
+          </div>
+          <p class="hint">可填写个人网站、GitHub 或在线作品集地址</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>教育背景</legend>
+
+          <div class="row">
+            <label class="req" for="school">毕业院校</label>
+            <input type="text" id="school" name="school" />
+          </div>
+
+          <div class="row">
+            <label class="req" for="major">所学专业</label>
+            <input type="text" id="major" name="major" />
+          </div>
+
+          <div class="row">
+            <label class="req" for="edu-level">学历</label>
+            <select id="edu-level" name="edu-level">
+              <option value="">请选择</option>
+              <option value="专科">专科</option>
+              <option value="本科">本科</option>
+              <option value="硕士">硕士</option>
+              <option value="博士">博士</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>经历</legend>
+
+          <!-- 注意：本站没有「科研经历」栏 -->
+          <div class="row">
+            <label for="work-exp">工作经历</label>
+            <textarea id="work-exp" name="work-exp"></textarea>
+          </div>
+          <p class="hint">请填写正式工作或实习经历</p>
+
+          <div class="row">
+            <label for="project-exp">项目经历</label>
+            <textarea id="project-exp" name="project-exp"></textarea>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>荣誉与获奖</legend>
+
+          <div class="row">
+            <label for="honors">荣誉奖励</label>
+            <textarea id="honors" name="honors"></textarea>
+          </div>
+          <p class="hint">奖学金、竞赛获奖、荣誉称号等请一并填写</p>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit" id="submit-btn">提交申请</button>
+          <button type="button" class="secondary" id="save-btn">保存草稿</button>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

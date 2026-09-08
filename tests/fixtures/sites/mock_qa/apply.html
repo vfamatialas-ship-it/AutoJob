@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>G 公司校园招聘 - 补充问卷</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+    <style>
+      .q {
+        margin: 16px 0;
+      }
+      .q > p {
+        margin: 0 0 6px;
+        font-size: 14px;
+      }
+      .q .opts {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+      .q .opts label {
+        flex: none;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>G 公司 · 校园招聘</h1>
+      <p>岗位：自动驾驶规控算法工程师</p>
+    </header>
+
+    <main>
+      <!--
+        本站刁难点：大量重复出现的校招问答，且措辞与标准问法不一致 —— Question Bank 的考场。
+        1. 「是否服从职位调剂」≠ 字面的「是否接受岗位调剂」，需语义匹配
+        2. 「最快什么时候能到岗」是自由文本 + 日期两种形态
+        3. 有一道公司特有的开放题，Question Bank 必然匹配不上 → 应触发 WAITING_USER
+        4. 问题不用 <label for>，而是 <p> + 同级 input
+      -->
+      <div class="notice">以下问题均为必答，请如实填写。</div>
+
+      <form id="qa-form" action="/mock_qa/success.html" method="get">
+        <fieldset>
+          <legend>补充问题</legend>
+
+          <div class="q" id="q-transfer">
+            <p>1. 是否服从职位调剂？</p>
+            <div class="opts">
+              <label><input type="radio" name="q-transfer" value="是" /> 是</label>
+              <label><input type="radio" name="q-transfer" value="否" /> 否</label>
+            </div>
+          </div>
+
+          <div class="q" id="q-location">
+            <p>2. 是否接受工作地点调配？</p>
+            <div class="opts">
+              <label><input type="radio" name="q-location" value="是" /> 是</label>
+              <label><input type="radio" name="q-location" value="否" /> 否</label>
+            </div>
+          </div>
+
+          <div class="q" id="q-city-wrap">
+            <p>3. 你的期望工作城市是？</p>
+            <input type="text" id="q-city" name="q-city" />
+          </div>
+
+          <div class="q" id="q-salary-wrap">
+            <p>4. 期望年薪（税前，单位：万元）</p>
+            <input type="number" id="q-salary" name="q-salary" />
+          </div>
+
+          <div class="q" id="q-available-wrap">
+            <p>5. 最快什么时候能到岗？</p>
+            <input type="date" id="q-available" name="q-available" />
+          </div>
+
+          <div class="q" id="q-overtime">
+            <p>6. 能否接受项目期间加班？</p>
+            <div class="opts">
+              <label><input type="radio" name="q-overtime" value="能" /> 能</label>
+              <label><input type="radio" name="q-overtime" value="不能" /> 不能</label>
+            </div>
+          </div>
+
+          <div class="q" id="q-relative-wrap">
+            <p>7. 你是否有亲属在本公司任职？如有请说明关系。</p>
+            <input type="text" id="q-relative" name="q-relative" />
+          </div>
+
+          <div class="q" id="q-english-wrap">
+            <p>8. 英语水平（如 CET-4 / CET-6 / 雅思分数）</p>
+            <input type="text" id="q-english" name="q-english" />
+          </div>
+
+          <div class="q" id="q-channel-wrap">
+            <p>9. 你是通过什么渠道了解到本次招聘的？</p>
+            <input type="text" id="q-channel" name="q-channel" />
+          </div>
+
+          <!-- 公司特有的开放题：Question Bank 必然匹配不上，应进入 WAITING_USER -->
+          <div class="q" id="q-open-wrap">
+            <p>10. 请用三句话说明你为什么适合本岗位，以及你最想解决的一个技术问题。</p>
+            <textarea id="q-open" name="q-open" maxlength="500"></textarea>
+          </div>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit" id="submit-btn">提交问卷</button>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

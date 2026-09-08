@@ -1,0 +1,47 @@
+# ============================================================
+# 个人隐私资料 —— 绝对不上传 GitHub（PRD §41 local-first）
+# ============================================================
+materials/
+杨恩慧简历/
+*.xlsx
+!docs/**/*.xlsx
+
+# 运行时产生的个人数据
+.autojob/
+browser-profile/
+screenshots/
+runs/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# 密钥
+.env
+.env.*
+!.env.example
+
+# ============================================================
+# 构建产物与依赖
+# ============================================================
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+coverage/
+.vitest/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# 编辑器 / 系统
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+.~*
+~$*
