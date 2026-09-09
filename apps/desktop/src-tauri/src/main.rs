@@ -16,6 +16,17 @@ use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
 
+// creation_flags 只存在于 Windows 的扩展 trait 上
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
+/// Windows 的 CREATE_NO_WINDOW。
+///
+/// Worker 是控制台子系统的程序（Node 本身就是），不加这个标志会在
+/// 桌面端启动时弹出一个黑色命令行窗口，并且一直挂在任务栏上。
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
 // try_state / path 由 Manager trait 提供，必须显式引入
 use tauri::Manager;
 
@@ -48,9 +59,13 @@ fn worker_info(state: tauri::State<WorkerState>) -> Result<WorkerInfo, String> {
 /// `AUTOJOB_WORKER_READY <port> <token>`，这里读到就算就绪。
 /// 用 stdout 而不是固定端口，是为了避免端口冲突，也避免令牌落到磁盘上。
 fn spawn_worker<S: AsRef<OsStr>>(command: S, args: &[&str]) -> Result<(Child, WorkerInfo), String> {
-    let mut child = Command::new(command)
-        .args(args)
-        .stdout(Stdio::piped())
+    let mut command = Command::new(command);
+    command.args(args).stdout(Stdio::piped());
+
+    #[cfg(windows)]
+    command.creation_flags(CREATE_NO_WINDOW);
+
+    let mut child = command
         .spawn()
         .map_err(|e| format!("无法启动 Worker：{e}"))?;
 

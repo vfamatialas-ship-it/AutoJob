@@ -4,6 +4,92 @@
 
 ---
 
+## 2026-09-09 · Windows 安装包（在 Linux 上交叉构建）
+
+### 本轮目标
+
+产出可用的 Windows 安装包。原计划靠 GitHub Actions 的 windows runner，
+但那需要先把仓库推上去；先试试能不能在本机直接交叉构建出来。
+
+### 修改文件
+
+- `scripts/build-worker.mjs`：新增 `--target win-x64`
+- `apps/desktop/src-tauri/build.rs`：目标平台一致性校验
+- `apps/desktop/src-tauri/src/main.rs`：Windows 下 `CREATE_NO_WINDOW`
+- `apps/desktop/src-tauri/tauri.conf.json`、`src-tauri/icons/`：补齐 `.ico`
+- `scripts/privacy-check.mjs`：锁文件豁免通用模式
+- `package.json`：`build:worker:win` / `build:win`
+- `docs/06-使用手册/打包.md`（新增）
+
+### 实现内容
+
+**1. 交叉构建之所以可行，靠三个恰好成立的前提**
+
+- **SEA blob 与平台无关** —— 前提是 `useSnapshot` 与 `useCodeCache` 都为 false，
+  而脚本一开始就是这么配的（当时是为了让 SEA 能运行时 require 原生模块）。
+  开了它们 blob 会内嵌 V8 机器码，这条路当场断掉。
+- **better-sqlite3 v13 把各平台预编译产物都装在 npm 包里**（`prebuilds/win32-x64.node`），
+  运行时按平台挑。原本以为「原生模块必须在目标平台编译」是死结，实际不是。
+- **Playwright 是纯 JS**，浏览器内核本来就运行时下载。
+
+缺的只是一个 Windows 版 Node 二进制，从 nodejs.org 下载即可。**版本必须与本机一致** ——
+SEA blob 里带着生成它的 Node 版本号，对不上会直接拒绝加载。
+
+**2. 一个我自己埋的坑，加了构建期校验**
+
+`dist-worker/` 是固定路径，Linux 包和 Windows 包都从这里取 Worker。
+交叉构建时如果忘了重跑 `build-worker.mjs`，Tauri 会**若无其事地**把上一次的
+Linux Worker 打进 Windows 安装包 —— 装完之后才发现起不来。
+
+所以 build-worker 会写一个 `dist-worker/TARGET`，`build.rs` 读它并在不匹配时
+panic。这道检查实测过确实会触发，不是写了摆着看的。
+
+**3. Worker 是控制台程序，Windows 上会弹黑窗口**
+
+Node 本身是 console 子系统的程序。桌面端拉起它时不加 `CREATE_NO_WINDOW`，
+用户会看到一个黑色命令行窗口挂在任务栏上。
+
+### 测试结果
+
+```
+pnpm check  ✓ 376 tests · 隐私审计 ✓
+```
+
+产物与验证：
+
+```
+AutoJob 秋招助手_0.0.1_x64-setup.exe   33MB
+  解包后布局正确：autojob-desktop.exe + worker/autojob-worker.exe
+                 + worker/node_modules/better-sqlite3/prebuilds/win32-x64.node
+
+Wine 实跑 worker/autojob-worker.exe：
+  AUTOJOB_WORKER_READY 37037 <token>          # SEA 注入有效
+  GET  /health       → {"ok":true,...}
+  POST /applications → {"counts":{},"items":[]}  # win32-x64.node 成功加载并开库
+  OPTIONS 预检       → 204
+```
+
+`/applications` 能返回是最关键的一条：它意味着 Windows 版原生模块真的加载了，
+而不只是文件被放进了包里。
+
+### 已知限制
+
+1. **界面外壳没能实跑验证**。Ubuntu 22.04 的 Wine 6.0 缺 `bcryptprimitives.dll`，
+   而且 Wine 至今没有 WebView2。只能确认它是合法的 PE32+ GUI 程序。
+   **真实 Windows 上的首次安装仍需人工确认。**
+2. **安装器未签名**，首次运行会弹 SmartScreen。交叉构建本来也无法签名 ——
+   要签名得走 CI 的 windows runner。
+3. 隐私审计对锁文件豁免了通用模式匹配：Cargo.lock 的校验和里出现 11 位连续数字
+   纯属概率事件（实测撞上一次），登记成 KNOWN_SYNTHETIC 会随依赖升级反复失效。
+   真实值精确匹配这一层对锁文件仍然生效。
+
+### 下一阶段建议
+
+把安装包拷到 Windows 机器上装一次，确认界面能起来、Worker 能被拉起。
+这是整条链路上唯一还没被实际验证的一环。
+
+---
+
 ## 2026-09-09 · M10 桌面端 GUI + M11 产品化打包
 
 ### 本轮目标

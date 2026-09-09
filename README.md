@@ -49,12 +49,16 @@ pnpm autojob match "<招聘主页 URL>"
 pnpm autojob app list
 ```
 
-桌面端（需要 Rust 工具链与 Tauri 系统依赖）：
+桌面端安装包（需要 Rust 工具链与 Tauri 系统依赖）：
 
 ```bash
-node scripts/build-worker.mjs
+node scripts/build-worker.mjs                              # Linux
 cd apps/desktop && pnpm exec tauri build --bundles deb
+
+pnpm build:win                                             # Windows（可在 Linux 上交叉构建）
 ```
+
+打包细节与环境准备见 [打包指南](docs/06-使用手册/打包.md)。
 
 完整用法见 [使用手册](docs/06-使用手册/README.md)。
 
@@ -110,7 +114,7 @@ TypeScript · Node 22 · Playwright · SQLite + Drizzle · Zod · Vitest · Taur
 | M8      | ATS 识别 + Moka Adapter             | ✅ 完成 |
 | M9      | Submit 验证 + 投递看板（MVP 完成）  | ✅ 完成 |
 | M10     | Desktop GUI（Tauri + React）        | ✅ 完成 |
-| M11     | 产品化打包（单文件 Worker + 安装包）| ✅ 完成 |
+| M11     | 产品化打包（Linux `.deb` + Windows `.exe`）| ✅ 完成 |
 
 完整计划见 [实施计划](docs/02-计划/AutoJob_PLAN_v1.0.md)。
 

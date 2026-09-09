@@ -43,7 +43,22 @@ const KNOWN_SYNTHETIC = new Set([
 ]);
 
 /** 允许出现敏感模式的文件（它们本身就是在处理这些模式） */
-const ALLOWED_FILES = [/^scripts\/privacy-check\.mjs$/, /^packages\/core\/src\/mask\.ts$/];
+/**
+ * 豁免**第二层通用模式**的文件（第一层真实值精确匹配对谁都不豁免）。
+ *
+ * 前两条是脱敏逻辑自身与它的测试，里面必然出现手机号形状的字符串。
+ *
+ * 锁文件是机器生成的十六进制校验和，11 位连续数字纯属概率事件 ——
+ * 实测 Cargo.lock 里就有一个 `...e17291832910d2dcc`。把它登记成
+ * KNOWN_SYNTHETIC 没有意义：依赖一升级校验和就变，误报会反复出现。
+ * 而真实手机号也不可能凭空出现在锁文件里，所以整类豁免是安全的。
+ */
+const ALLOWED_FILES = [
+  /^scripts\/privacy-check\.mjs$/,
+  /^packages\/core\/src\/mask\.ts$/,
+  /(^|\/)Cargo\.lock$/,
+  /(^|\/)pnpm-lock\.yaml$/,
+];
 
 const trackedFiles = () =>
   execFileSync('git', ['ls-files'], { encoding: 'utf-8' })

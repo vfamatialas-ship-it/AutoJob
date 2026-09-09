@@ -24,7 +24,10 @@
     "worker": "tsx apps/worker/src/main.ts",
     "desktop:dev": "pnpm --dir apps/desktop tauri dev",
     "desktop:build": "pnpm --dir apps/desktop tauri build",
-    "build:worker": "node scripts/build-worker.mjs"
+    "build:worker": "node scripts/build-worker.mjs",
+    "build:worker:win": "node scripts/build-worker.mjs --target win-x64",
+    "// build:win": "在 Linux 上交叉构建 Windows 安装包。环境准备见 docs/06-使用手册/打包.md",
+    "build:win": "pnpm build:worker:win && pnpm --dir apps/desktop exec tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc --bundles nsis"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
