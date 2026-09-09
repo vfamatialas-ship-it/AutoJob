@@ -30,8 +30,8 @@ describe('main 的退出码', () => {
 
   it('未实现的子命令返回非零', async () => {
     process.exitCode = 0;
-    // app 计划在 M9 交付，当前应显式报错而非假装成功
-    const code = await main(['node', 'autojob', 'app']);
+    // asset 计划在 M10 的图形界面中提供，当前应显式报错而非假装成功
+    const code = await main(['node', 'autojob', 'asset']);
     expect(code).not.toBe(0);
   });
 

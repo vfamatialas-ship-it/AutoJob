@@ -17,6 +17,9 @@
     "@autojob/database": "workspace:*",
     "@autojob/application-diff": "workspace:*",
     "@autojob/job-discovery": "workspace:*",
-    "@autojob/job-matcher": "workspace:*"
+    "@autojob/job-matcher": "workspace:*",
+    "@autojob/ats-detector": "workspace:*",
+    "@autojob/adapter-moka": "workspace:*",
+    "@autojob/adapter-generic": "workspace:*"
   }
 }

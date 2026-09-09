@@ -13,6 +13,7 @@ import { registerDoctorCommand } from './commands/doctor.js';
 import { registerProfileCommand } from './commands/profile.js';
 import { registerApplyCommand } from './commands/apply.js';
 import { registerJobsCommand } from './commands/jobs.js';
+import { registerAppCommand } from './commands/app.js';
 
 const VERSION = '0.0.1';
 
@@ -29,22 +30,22 @@ export function buildProgram(): Command {
   registerProfileCommand(program);
   registerApplyCommand(program);
   registerJobsCommand(program);
+  registerAppCommand(program);
 
   // 占位子命令：明确告知尚未实现，避免误以为可用（PRD §71 禁止含糊失败）
   const planned: ReadonlyArray<readonly [string, string, string]> = [
-    ['asset', '管理附件库（简历 / 作品集 / 成绩单 / 证书）', 'M5'],
-    ['app', '查看与更新投递记录（Dashboard）', 'M9'],
+    ['asset', '管理附件库（简历 / 作品集 / 成绩单 / 证书）', 'M10 的图形界面中提供'],
   ];
 
   for (const [name, description, milestone] of planned) {
     program
       .command(name)
-      .description(`${description} [${milestone} 实现]`)
+      .description(`${description} [${milestone}]`)
       .allowUnknownOption()
       .action(() => {
         throw new AutoJobError(
           ErrorCode.CONFIG_INVALID,
-          `子命令 "${name}" 尚未实现，计划在 ${milestone} 交付。`,
+          `子命令 "${name}" 尚未实现，计划在 ${milestone}。`,
           { hint: '当前可用命令：autojob doctor' },
         );
       });

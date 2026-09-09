@@ -1,0 +1,14 @@
+{
+  "name": "@autojob/ats-detector",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "识别招聘网站使用的 ATS 系统",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@autojob/core": "workspace:*"
+  }
+}

@@ -24,7 +24,10 @@
       "@autojob/job-discovery": ["packages/job-discovery/src/index.ts"],
       "@autojob/job-discovery/*": ["packages/job-discovery/src/*"],
       "@autojob/job-matcher": ["packages/job-matcher/src/index.ts"],
-      "@autojob/job-matcher/*": ["packages/job-matcher/src/*"]
+      "@autojob/job-matcher/*": ["packages/job-matcher/src/*"],
+      "@autojob/ats-detector": ["packages/ats-detector/src/index.ts"],
+      "@autojob/adapter-moka": ["packages/adapters/moka/src/index.ts"],
+      "@autojob/adapter-generic": ["packages/adapters/generic/src/index.ts"]
     }
   },
   "include": [

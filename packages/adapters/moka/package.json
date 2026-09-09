@@ -1,0 +1,17 @@
+{
+  "name": "@autojob/adapter-moka",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Moka ATS Adapter",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@autojob/ats-detector": "workspace:*",
+    "@autojob/core": "workspace:*",
+    "@autojob/job-discovery": "workspace:*",
+    "playwright": "^1.63.0"
+  }
+}

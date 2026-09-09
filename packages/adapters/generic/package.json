@@ -1,0 +1,16 @@
+{
+  "name": "@autojob/adapter-generic",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "GenericAdapter：未知 ATS 的通用兜底",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@autojob/ats-detector": "workspace:*",
+    "@autojob/job-discovery": "workspace:*",
+    "playwright": "^1.63.0"
+  }
+}

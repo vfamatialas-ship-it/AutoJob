@@ -60,6 +60,8 @@ export default tseslint.config(
       'packages/form-schema/src/raw-field.ts',
       'packages/browser/src/page-scripts.ts',
       'packages/job-discovery/src/extract-script.ts',
+      'packages/adapters/moka/src/moka-adapter.ts',
+      'packages/adapters/generic/src/index.ts',
     ],
     rules: {
       'no-restricted-globals': [

@@ -16,6 +16,9 @@ export default defineConfig({
       '@autojob/application-diff': resolvePath('./packages/application-diff/src/index.ts'),
       '@autojob/job-discovery': resolvePath('./packages/job-discovery/src/index.ts'),
       '@autojob/job-matcher': resolvePath('./packages/job-matcher/src/index.ts'),
+      '@autojob/ats-detector': resolvePath('./packages/ats-detector/src/index.ts'),
+      '@autojob/adapter-moka': resolvePath('./packages/adapters/moka/src/index.ts'),
+      '@autojob/adapter-generic': resolvePath('./packages/adapters/generic/src/index.ts'),
     },
   },
   test: {

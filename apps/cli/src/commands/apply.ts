@@ -26,6 +26,7 @@ import {
   launchSession,
   validateForm,
   waitForUserToResolveGate,
+  COLLECT_RESOURCE_URLS,
 } from '@autojob/browser';
 import { classifyForm, summarize, EXTRACT_FIELDS_SCRIPT } from '@autojob/form-schema';
 import {
@@ -37,6 +38,35 @@ import {
 } from '@autojob/form-mapper';
 import { ApplicationRepository, openDatabase } from '@autojob/database';
 import { buildDiff, renderDiff } from '@autojob/application-diff';
+import {
+  AdapterRegistry,
+  detectAts,
+  shouldUseAdapter,
+  type ATSAdapter,
+} from '@autojob/ats-detector';
+import { mokaAdapter } from '@autojob/adapter-moka';
+import { genericAdapter } from '@autojob/adapter-generic';
+import { createInterface } from 'node:readline/promises';
+
+/** 已实现的 Adapter。新增 ATS 时在这里注册即可 */
+const REGISTRY = new AdapterRegistry();
+REGISTRY.register(mokaAdapter);
+
+/**
+ * 问用户一个是非题。
+ *
+ * 提交是不可逆的，必须由人明确点头（PRD §3.7）。默认答案是「否」——
+ * 用户直接回车不会误提交。
+ */
+async function confirm(question: string): Promise<boolean> {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    const answer = await rl.question(`${question} [y/N] `);
+    return /^y(es)?$/i.test(answer.trim());
+  } finally {
+    rl.close();
+  }
+}
 import type { Command } from 'commander';
 
 interface ApplyOptions {
@@ -48,6 +78,8 @@ interface ApplyOptions {
   readonly runsDir?: string;
   readonly dryRun?: boolean;
   readonly verbose?: boolean;
+  /** 允许在用户确认后由程序点击提交按钮。缺省时只填不交 */
+  readonly allowSubmit?: boolean;
 }
 
 function loadProfile(path: string): CandidateProfile {
@@ -103,6 +135,18 @@ export async function runApply(url: string, options: ApplyOptions): Promise<numb
     await session.page.goto(url, { waitUntil: 'domcontentloaded' });
     await artifacts.screenshot(session.page, 'opened');
 
+    // ── 识别 ATS。资源来源比域名可靠：企业能换域名，换不掉供应商的 CDN
+    const resourceUrls = await session.page.evaluate(COLLECT_RESOURCE_URLS).catch(() => []);
+    const detection = detectAts({ url, resourceUrls });
+    const adapter: ATSAdapter = shouldUseAdapter(detection)
+      ? (REGISTRY.get(detection.ats) ?? genericAdapter)
+      : genericAdapter;
+
+    write('');
+    write(`── 招聘系统：${detection.label}（置信度 ${detection.confidence}）`);
+    if (detection.evidence.length > 0) write(`   依据：${detection.evidence.join('；')}`);
+    write(`   使用 ${adapter === genericAdapter ? '通用解析' : `${adapter.label} 专用适配器`}`);
+
     // ── 登录 / 验证码：只检测，不绕过（PRD §74）
     const gate = await detectGate(session.page);
     if (gate.gate !== 'none') {
@@ -126,6 +170,13 @@ export async function runApply(url: string, options: ApplyOptions): Promise<numb
 
     // ── 解析字段
     machine.to(TaskState.FORM_LOADING, '加载申请表');
+
+    // SPA 的表单是异步渲染的，不等就会解析到空页面
+    if (adapter.waitForForm !== undefined) {
+      const ready = await adapter.waitForForm(session.page);
+      if (!ready) write('   （提示：等待表单渲染超时，将按当前页面内容解析）');
+    }
+
     machine.to(TaskState.FORM_PARSING, '解析字段');
 
     const rawFields = await session.page.evaluate(EXTRACT_FIELDS_SCRIPT);
@@ -152,7 +203,11 @@ export async function runApply(url: string, options: ApplyOptions): Promise<numb
     const repo = new ApplicationRepository(db);
 
     const companyName = options.company ?? guessCompanyName(url);
-    const company = repo.upsertCompany({ name: companyName, careerUrl: url });
+    const company = repo.upsertCompany({
+      name: companyName,
+      careerUrl: url,
+      atsType: detection.ats,
+    });
     const job = repo.upsertJob({
       companyId: company.id,
       title: options.job ?? '未指定岗位',
@@ -279,22 +334,88 @@ export async function runApply(url: string, options: ApplyOptions): Promise<numb
 
     write('');
     write('══════════════════════════════════════════');
-    write('已填写完成，**未提交**。');
-    write('');
-    write('请在打开的浏览器窗口中核对内容，确认无误后由你自己点击提交按钮。');
-    write('');
     write(`投递记录  ${application.id}`);
     write(`Run ID    ${runId}`);
     write(`产物目录  ${artifacts.dir}`);
     write('══════════════════════════════════════════');
+
+    /*
+     * 提交流程 —— PRD §3.7 的核心约束。
+     *
+     * 三道锁，缺一不可：
+     *   1. 必须显式加 --allow-submit（默认只填不交）
+     *   2. Diff 判定可提交（无阻断项、无待确认字段）
+     *   3. 用户在终端明确回答 y
+     *
+     * 任何一道不过，就停在「已填好、未提交」，由用户自己在浏览器里点。
+     */
+    if (options.allowSubmit !== true) {
+      write('');
+      write('已填写完成，**未提交**。');
+      write('请在打开的浏览器窗口中核对，确认无误后由你自己点击提交按钮。');
+      write('（若希望程序代为提交，请加 --allow-submit，届时仍会再问你一次）');
+      db.close();
+      await session.page.waitForTimeout(2_000);
+      return 0;
+    }
+
+    if (!diff.submittable) {
+      write('');
+      write('已填写完成，**未提交** —— Diff 中仍有需要你处理的问题（见上）。');
+      db.close();
+      await session.page.waitForTimeout(2_000);
+      return 2;
+    }
+
+    if (adapter.submit === undefined) {
+      write('');
+      write(`已填写完成，**未提交** —— ${adapter.label} 尚未实现自动提交。`);
+      write('请在浏览器中自行点击提交按钮。');
+      db.close();
+      await session.page.waitForTimeout(2_000);
+      return 0;
+    }
+
     write('');
-    write('浏览器保持打开，按 Ctrl+C 结束本次运行。');
+    const confirmed = await confirm(`确认向「${company.name} · ${job.title}」提交这份申请？`);
+    if (!confirmed) {
+      write('已取消提交。表单内容保留在浏览器中，你可以自行修改后手动提交。');
+      db.close();
+      return 0;
+    }
 
+    machine.to(TaskState.SUBMITTING, '用户已确认');
+    await adapter.submit(session.page);
+    await artifacts.screenshot(session.page, 'submitted');
+
+    // 不能因为点了按钮就认为成功（PRD §60）
+    machine.to(TaskState.VERIFYING, '验证提交结果');
+    const verification =
+      adapter.verifySubmission === undefined
+        ? { submitted: false, confirmationText: '', detail: '该适配器未实现提交验证' }
+        : await adapter.verifySubmission(session.page);
+
+    await artifacts.screenshot(session.page, 'verified');
+
+    if (verification.submitted) {
+      machine.to(TaskState.SUCCESS, verification.detail);
+      repo.updateStatus(application.id, 'SUBMITTED', {
+        confirmationText: verification.confirmationText,
+        notes: verification.detail,
+      });
+      write('');
+      write(`✓ 提交成功：${verification.confirmationText || verification.detail}`);
+    } else {
+      machine.to(TaskState.FAILED, verification.detail);
+      write('');
+      write(`✗ 未能确认提交成功：${verification.detail}`);
+      write('  请在浏览器中人工核对。投递记录已保留为「待提交」状态。');
+    }
+
+    await artifacts.writeJson('transitions', machine.history);
     db.close();
-
-    // 不自动关闭浏览器 —— 用户还要在里面核对和提交
-    await session.page.waitForTimeout(3_000);
-    return 0;
+    await session.page.waitForTimeout(2_000);
+    return verification.submitted ? 0 : 1;
   } catch (thrown) {
     if (!machine.isDone) machine.to(TaskState.FAILED, String(thrown));
     await artifacts.screenshot(session.page, 'failed').catch(() => undefined);
@@ -317,6 +438,7 @@ export function registerApplyCommand(program: Command): void {
     .option('--runs-dir <path>', '产物目录（默认 ~/.autojob/runs）')
     .option('--dry-run', '只生成映射计划与 Diff，不实际填写')
     .option('--verbose', 'Diff 中展开全部字段内容与被排除的记录')
+    .option('--allow-submit', '允许在你二次确认后由程序点击提交（默认只填不交）')
     .option('--headless', '无头模式运行（仅用于测试，正常使用请勿开启）')
     .action(async (url: string, options: ApplyOptions) => {
       process.exitCode = await runApply(url, options);

@@ -158,9 +158,18 @@ importers:
 
   apps/cli:
     dependencies:
+      '@autojob/adapter-generic':
+        specifier: workspace:*
+        version: link:../../packages/adapters/generic
+      '@autojob/adapter-moka':
+        specifier: workspace:*
+        version: link:../../packages/adapters/moka
       '@autojob/application-diff':
         specifier: workspace:*
         version: link:../../packages/application-diff
+      '@autojob/ats-detector':
+        specifier: workspace:*
+        version: link:../../packages/ats-detector
       '@autojob/browser':
         specifier: workspace:*
         version: link:../../packages/browser
@@ -189,6 +198,33 @@ importers:
         specifier: ^12.1.0
         version: 12.1.0
 
+  packages/adapters/generic:
+    dependencies:
+      '@autojob/ats-detector':
+        specifier: workspace:*
+        version: link:../../ats-detector
+      '@autojob/job-discovery':
+        specifier: workspace:*
+        version: link:../../job-discovery
+      playwright:
+        specifier: ^1.63.0
+        version: 1.63.0
+
+  packages/adapters/moka:
+    dependencies:
+      '@autojob/ats-detector':
+        specifier: workspace:*
+        version: link:../../ats-detector
+      '@autojob/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@autojob/job-discovery':
+        specifier: workspace:*
+        version: link:../../job-discovery
+      playwright:
+        specifier: ^1.63.0
+        version: 1.63.0
+
   packages/application-diff:
     dependencies:
       '@autojob/candidate-profile':
@@ -203,6 +239,12 @@ importers:
       '@autojob/form-schema':
         specifier: workspace:*
         version: link:../form-schema
+
+  packages/ats-detector:
+    dependencies:
+      '@autojob/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/browser:
     dependencies:
