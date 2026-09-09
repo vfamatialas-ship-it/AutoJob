@@ -129,17 +129,41 @@ export function parseGraduateYear(text: string): number | undefined {
   return Number(match[1]);
 }
 
-/** 从 URL 中提取岗位编号。绝大多数站点会把它放在 query 或路径末段 */
+/**
+ * 从 URL 中提取岗位编号。
+ *
+ * 查找顺序是**从最可能是岗位标识的位置开始**：
+ *
+ * 1. **hash 路由**（`#/job/093114fd-...`）—— SPA 型 ATS 把岗位 id 放这儿。
+ *    这一条必须最先查：Moka 的页面 URL 形如
+ *    `/campus-recruitment/dji/143359#/job/<uuid>`，若先看路径末段会取到
+ *    `143359`（那是**页面 id**，全站所有岗位都一样），导致 30 个岗位被
+ *    去重成 1 个。这个坑是在真实站点上踩到的。
+ * 2. query 参数（`?id=J1001`）
+ * 3. 路径末段（`/job/J1001`）
+ */
 export function parseExternalJobId(url: string): string {
   try {
     const parsed = new URL(url, 'https://placeholder.invalid');
 
+    // 1. hash 路由。`#/job/abc` 取 abc；纯锚点（`#top`）不算
+    const hash = parsed.hash.replace(/^#/, '');
+    if (hash.includes('/')) {
+      const hashPath = hash.split('?')[0] ?? '';
+      const segment = hashPath
+        .split('/')
+        .filter((part) => part.length > 0)
+        .at(-1);
+      if (segment !== undefined && segment.length >= 3) return segment;
+    }
+
+    // 2. query 参数
     for (const key of ['id', 'jid', 'jobId', 'job_id', 'positionId', 'code']) {
       const value = parsed.searchParams.get(key);
       if (value !== null && value.length > 0) return value;
     }
 
-    // 路径末段形如 /job/J1001 或 /position/12345
+    // 3. 路径末段，形如 /job/J1001 或 /position/12345
     const segments = parsed.pathname.split('/').filter((part) => part.length > 0);
     const last = segments.at(-1) ?? '';
     if (/^[A-Za-z]*\d{3,}$/.test(last)) return last;

@@ -79,9 +79,35 @@ async function fetchJobs(
   const log = createLogger('jobs', { runId });
   const session = await launchSession({ headless: options.headless, logger: log });
 
+  const extract = async (): Promise<ReturnType<typeof parseJobList>> =>
+    parseJobList(await session.page.evaluate(EXTRACT_JOB_LIST_SCRIPT), {
+      company: options.company,
+      baseUrl: url,
+    });
+
   try {
     await session.page.goto(url, { waitUntil: 'domcontentloaded' });
 
+    /*
+     * 先等内容渲染出来再判断。
+     *
+     * 现代招聘站几乎都是 SPA：domcontentloaded 时页面上只有导航和页脚，
+     * 职位要等异步请求回来才渲染。早期版本 goto 完就提取，结果在真实的
+     * Moka 站上抓到了页脚的三个外链 —— 那时职位根本还没出现在 DOM 里。
+     *
+     * 用轮询而非固定等待：静态页第一轮就拿到结果，只有 SPA 才付等待成本。
+     */
+    const MAX_SETTLE_ROUNDS = 8;
+    let best = await extract();
+
+    for (let round = 0; round < MAX_SETTLE_ROUNDS && best.jobs.length < 5; round += 1) {
+      await session.page.waitForTimeout(1_000);
+      const next = await extract();
+      // 内容只会越渲染越多，取更优的一次
+      if (next.score > best.score || next.jobs.length > best.jobs.length) best = next;
+    }
+
+    // 懒加载：反复点「加载更多」直到按钮消失或链接数不再增长
     const MAX_CLICKS = 20;
     let previousLinkCount = 0;
 
@@ -89,16 +115,18 @@ async function fetchJobs(
       const result = await session.page.evaluate(CLICK_LOAD_MORE_SCRIPT);
       if (!result.clicked) break;
 
-      await session.page.waitForTimeout(400);
+      await session.page.waitForTimeout(500);
       const after = await session.page.evaluate(CLICK_LOAD_MORE_SCRIPT);
 
       // 点了但内容没增加，说明到底了（或按钮失效），不再纠缠
       if (after.linkCount <= previousLinkCount) break;
       previousLinkCount = after.linkCount;
+
+      const expanded = await extract();
+      if (expanded.jobs.length > best.jobs.length) best = expanded;
     }
 
-    const candidates = await session.page.evaluate(EXTRACT_JOB_LIST_SCRIPT);
-    return parseJobList(candidates, { company: options.company, baseUrl: url });
+    return best;
   } finally {
     await session.close();
   }

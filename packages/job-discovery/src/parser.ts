@@ -32,6 +32,11 @@ function jobId(company: string, externalId: string, title: string, location: str
   return `hash:${createHash('sha256').update(material).digest('hex').slice(0, 16)}`;
 }
 
+/** 编号不可用时的兜底 id：按公司+标题+地点做 hash */
+function fallbackId(job: Job): string {
+  return jobId(job.company, '', job.title, job.location);
+}
+
 function absoluteUrl(url: string, baseUrl: string): string {
   try {
     return new URL(url, baseUrl).toString();
@@ -110,15 +115,34 @@ export function parseJobList(
     return { jobs: [], signature: '', score: 0, discardedGroups: 0 };
   }
 
+  const parsed = best.items
+    .map((item) => parseJobItem(item, options))
+    .filter((job): job is Job => job !== undefined);
+
+  /*
+   * 防线：如果整组岗位解析出的编号**完全一样**，那它就不是岗位编号 ——
+   * 更可能是页面 id 或租户 id。拿它做去重会把整页岗位压成一条。
+   *
+   * 这不是假想的情况：真实站点的 URL 形如
+   * `/campus-recruitment/dji/143359#/job/<uuid>`，早期版本从路径末段取到
+   * `143359`，30 个岗位于是共用同一个 id，最终只剩 1 条。
+   * 编号提取本身已修好，这里再兜一层，防止别的站点用别的方式重蹈覆辙。
+   */
+  const distinctExternalIds = new Set(
+    parsed.map((job) => job.externalJobId).filter((id) => id.length > 0),
+  );
+  const externalIdIsUseless = parsed.length > 1 && distinctExternalIds.size === 1;
+
   const jobs: Job[] = [];
   const seen = new Set<string>();
 
-  for (const item of best.items) {
-    const job = parseJobItem(item, options);
-    if (job === undefined) continue;
-    if (seen.has(job.id)) continue; // 同一岗位在页面上出现多次是常见的
-    seen.add(job.id);
-    jobs.push(job);
+  for (const job of parsed) {
+    const effective = externalIdIsUseless
+      ? { ...job, externalJobId: '', id: fallbackId(job) }
+      : job;
+    if (seen.has(effective.id)) continue; // 同一岗位在页面上出现多次是常见的
+    seen.add(effective.id);
+    jobs.push(effective);
   }
 
   return {

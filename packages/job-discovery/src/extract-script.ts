@@ -92,12 +92,49 @@ export const EXTRACT_JOB_LIST_SCRIPT = function extractJobLists(): RawJobList[] 
     return undefined;
   };
 
+  /**
+   * 从链接里取出职位标题。
+   *
+   * 不能直接用 `anchor.textContent` —— 卡片式布局会把**整张卡片**包在 `<a>` 里，
+   * 标题、职责描述、地点全在一起，取出来是几百字的一团。
+   * 实测大疆的 Moka 站就是这样，导致那组被「标题长度合理」的评分判为不像职位列表，
+   * 反而是页脚的三个短链接赢了。
+   *
+   * 策略：标题元素 → 首行文本 → 整段截断。首行之所以可靠，是因为
+   * innerText 会在块级元素之间保留换行，而标题几乎总是卡片的第一个块。
+   */
+  const extractTitle = (anchor: Element): string => {
+    const heading = anchor.querySelector(
+      'h1, h2, h3, h4, h5, h6, [class*="title" i], [class*="name" i]',
+    );
+    if (heading !== null) {
+      const text = clean((heading as HTMLElement).innerText ?? heading.textContent);
+      if (text.length >= 2 && text.length <= 60) return text;
+    }
+
+    const full = (anchor as HTMLElement).innerText ?? anchor.textContent ?? '';
+    const firstLine = full
+      .split('\n')
+      .map((line) => line.trim())
+      .find((line) => line.length > 0);
+
+    return clean(firstLine ?? full).slice(0, 60);
+  };
+
   const groups = new Map<string, { element: Element; anchor: Element }[]>();
+
+  /**
+   * 页内锚点（`#`、`#top`）不是职位；但 **hash 路由（`#/job/xxx`）是**。
+   *
+   * 早期版本一刀切跳过所有 `#` 开头的 href，结果把 Moka 的职位全过滤掉了 ——
+   * 它的职位链接正是 `#/job/093114fd-...` 这种形态。SPA 用 hash 路由很常见，
+   * 判据应该是「`#` 后面有没有路径」，而不是「是不是以 `#` 开头」。
+   */
+  const isPureFragment = (href: string): boolean => /^#[\w-]*$/.test(href);
 
   for (const anchor of Array.from(document.querySelectorAll('a[href]'))) {
     const href = anchor.getAttribute('href') ?? '';
-    // 锚点、JS 伪链接不是职位
-    if (href.length === 0 || href.startsWith('#') || href.startsWith('javascript:')) continue;
+    if (href.length === 0 || isPureFragment(href) || href.startsWith('javascript:')) continue;
 
     const item = findRepeatingAncestor(anchor);
     if (item === undefined) continue;
@@ -120,8 +157,8 @@ export const EXTRACT_JOB_LIST_SCRIPT = function extractJobLists(): RawJobList[] 
     if (entries.length < 3) continue;
 
     const items: RawJobItem[] = entries.map(({ element, anchor }) => {
-      const title = clean(anchor.textContent);
-      const fullText = clean(element.textContent);
+      const title = extractTitle(anchor);
+      const fullText = clean((element as HTMLElement).innerText ?? element.textContent);
 
       // 条目内除标题外的文本片段。用多种分隔符切，覆盖 td / span / div 各种排布
       const rest = fullText.replace(title, ' ');
@@ -150,11 +187,25 @@ export const EXTRACT_JOB_LIST_SCRIPT = function extractJobLists(): RawJobList[] 
     const plausibleTitles = titleLengths.filter((length) => length >= 4 && length <= 40).length;
     const withMetadata = items.filter((item) => item.fields.length > 0).length;
 
+    /*
+     * 同站链接加分。职位链接几乎总是留在本站，而页脚的「官网」「English」
+     * 这类导航链接往往指向别的域名 —— 大疆页面的页脚就是这样骗过了早期版本。
+     */
+    const sameHost = items.filter((item) => {
+      if (item.url.startsWith('/') || item.url.startsWith('?')) return true;
+      try {
+        return new URL(item.url, window.location.href).hostname === window.location.hostname;
+      } catch {
+        return false;
+      }
+    }).length;
+
     const score =
       Math.min(entries.length, 20) * 2 +
       (plausibleTitles / items.length) * 40 +
       (distinctUrls / items.length) * 20 +
-      (withMetadata / items.length) * 20;
+      (withMetadata / items.length) * 20 +
+      (sameHost / items.length) * 15;
 
     results.push({ signature, items, score: Math.round(score * 100) / 100 });
   }
