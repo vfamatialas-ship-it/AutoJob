@@ -70,6 +70,11 @@ export interface MockSite {
    * 通用的结构性断言（如「提交按钮可见」）对这类站不适用，由专项用例覆盖。
    */
   readonly gated?: boolean;
+  /**
+   * 这是岗位列表页而非申请表页。
+   * 申请表相关的通用断言（表单、提交按钮、字段解析）对它不适用。
+   */
+  readonly isJobList?: boolean;
 }
 
 export const MOCK_SITES: readonly MockSite[] = [
@@ -496,6 +501,36 @@ export const MOCK_SITES: readonly MockSite[] = [
     // 登录前字段不存在，登录后才可解析，因此由专门的 E2E 用例覆盖
     fields: [],
     expectedWarnings: [],
+  },
+  {
+    id: 'mock_joblist_table',
+    name: 'I 公司 · 表格式岗位列表',
+    quirks: [
+      '标准表格，每行一个职位，列固定',
+      '有筛选下拉 —— 解析器不该把它当成职位',
+      '岗位方向刻意混杂：机器人/具身智能与 Java/前端/销售同列',
+      '含一条社招岗位，用于验证类型过滤',
+    ],
+    applyPath: '/mock_joblist_table/jobs.html',
+    targets: { experience: [], award: [] },
+    fields: [],
+    expectedWarnings: [],
+    isJobList: true,
+  },
+  {
+    id: 'mock_joblist_cards',
+    name: 'J 公司 · 卡片式岗位列表（懒加载）',
+    quirks: [
+      '卡片结构，元信息无固定列序',
+      '初始只渲染 3 条，点「加载更多」才出剩下的',
+      '顶部有宣讲会推广区，里面也有链接 —— 干扰项',
+      '部分卡片没有部门信息，字段缺失是常态',
+    ],
+    applyPath: '/mock_joblist_cards/jobs.html',
+    targets: { experience: [], award: [] },
+    fields: [],
+    expectedWarnings: [],
+    isJobList: true,
   },
 ];
 

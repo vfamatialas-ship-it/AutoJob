@@ -73,6 +73,6 @@ pnpm autojob doctor # 环境自检
 
 见 `docs/02-计划/AutoJob_PLAN_v1.0.md` 的里程碑表与 `docs/03-进展/PROGRESS.md`。
 
-**当前所处阶段：M6 已完成，下一步 M7（Job Discovery + Job Matcher，只读不投）。**
+**当前所处阶段：M7 已完成，下一步 M8（第一个真实 ATS Adapter：飞书招聘）。**
 
 在当前里程碑的验收标准全部满足之前，不要开始下一个里程碑（PRD §80 结尾）。

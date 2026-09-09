@@ -20,7 +20,11 @@
       "@autojob/content-adapter": ["packages/content-adapter/src/index.ts"],
       "@autojob/content-adapter/*": ["packages/content-adapter/src/*"],
       "@autojob/application-diff": ["packages/application-diff/src/index.ts"],
-      "@autojob/application-diff/*": ["packages/application-diff/src/*"]
+      "@autojob/application-diff/*": ["packages/application-diff/src/*"],
+      "@autojob/job-discovery": ["packages/job-discovery/src/index.ts"],
+      "@autojob/job-discovery/*": ["packages/job-discovery/src/*"],
+      "@autojob/job-matcher": ["packages/job-matcher/src/index.ts"],
+      "@autojob/job-matcher/*": ["packages/job-matcher/src/*"]
     }
   },
   "include": [

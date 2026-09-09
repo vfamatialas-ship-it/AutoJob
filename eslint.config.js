@@ -56,7 +56,11 @@ export default tseslint.config(
   {
     // 浏览器全局只允许出现在会被送进页面执行的脚本里，以及 Playwright 测试中
     files: ['packages/**/src/**/*.ts', 'apps/**/src/**/*.ts'],
-    ignores: ['packages/form-schema/src/raw-field.ts', 'packages/browser/src/page-scripts.ts'],
+    ignores: [
+      'packages/form-schema/src/raw-field.ts',
+      'packages/browser/src/page-scripts.ts',
+      'packages/job-discovery/src/extract-script.ts',
+    ],
     rules: {
       'no-restricted-globals': [
         'error',

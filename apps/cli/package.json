@@ -15,6 +15,8 @@
     "@autojob/form-mapper": "workspace:*",
     "@autojob/browser": "workspace:*",
     "@autojob/database": "workspace:*",
-    "@autojob/application-diff": "workspace:*"
+    "@autojob/application-diff": "workspace:*",
+    "@autojob/job-discovery": "workspace:*",
+    "@autojob/job-matcher": "workspace:*"
   }
 }

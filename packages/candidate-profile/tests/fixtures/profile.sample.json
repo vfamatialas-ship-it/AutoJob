@@ -243,7 +243,7 @@
       "category": "machine_learning",
       "level": "expert",
       "evidence": ["exp-underwater-vla", "exp-internship-sorting"],
-      "keywords": ["Vision-Language-Action", "pi0.5", "π0.5"]
+      "keywords": ["Vision-Language-Action", "pi0.5", "π0.5", "VLA"]
     },
     {
       "id": "skill-rl",

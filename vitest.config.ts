@@ -14,6 +14,8 @@ export default defineConfig({
       '@autojob/database': resolvePath('./packages/database/src/index.ts'),
       '@autojob/content-adapter': resolvePath('./packages/content-adapter/src/index.ts'),
       '@autojob/application-diff': resolvePath('./packages/application-diff/src/index.ts'),
+      '@autojob/job-discovery': resolvePath('./packages/job-discovery/src/index.ts'),
+      '@autojob/job-matcher': resolvePath('./packages/job-matcher/src/index.ts'),
     },
   },
   test: {

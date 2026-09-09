@@ -1,0 +1,17 @@
+{
+  "name": "@autojob/job-matcher",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "岗位匹配：硬性过滤 + 确定性打分",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@autojob/candidate-profile": "workspace:*",
+    "@autojob/core": "workspace:*",
+    "@autojob/job-discovery": "workspace:*",
+    "zod": "^3.24.1"
+  }
+}

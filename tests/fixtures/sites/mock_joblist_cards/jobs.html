@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>J 公司校园招聘 - 职位</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+    <style>
+      .job-card {
+        background: #fff;
+        border: 1px solid #e2e5ea;
+        border-radius: 6px;
+        padding: 16px 20px;
+        margin-bottom: 12px;
+      }
+      .job-card h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+      .job-card h3 a {
+        color: #1f4e9c;
+        text-decoration: none;
+      }
+      .job-meta {
+        display: flex;
+        gap: 16px;
+        font-size: 13px;
+        color: #777;
+        flex-wrap: wrap;
+      }
+      .job-meta span::before {
+        content: '· ';
+        color: #bbb;
+      }
+      .job-meta span:first-child::before {
+        content: '';
+      }
+      .job-desc {
+        margin-top: 10px;
+        font-size: 13px;
+        color: #555;
+        line-height: 1.6;
+      }
+      #load-more {
+        width: 100%;
+        padding: 10px;
+        background: #fff;
+        border: 1px dashed #1f4e9c;
+        color: #1f4e9c;
+      }
+      .promo {
+        background: #fffbe6;
+        border: 1px solid #f0d999;
+        border-radius: 6px;
+        padding: 14px 18px;
+        margin-bottom: 16px;
+      }
+      .promo a {
+        color: #a97b00;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>J 公司 · 校园招聘</h1>
+      <p>加入我们，一起做点有意思的事</p>
+    </header>
+
+    <main>
+      <!--
+        本站形态：卡片列表 + 懒加载。
+        1. 卡片结构，元信息在 .job-meta 里，没有固定列序
+        2. 初始只渲染 3 条，点「加载更多」才出剩下的 —— 解析器必须先触发加载
+        3. 页面顶部有一块「宣讲会」推广区，里面也有链接 ——
+           解析器不该把它误认成职位（干扰项）
+        4. 部分卡片没有部门信息，字段缺失是常态
+      -->
+      <div class="promo">
+        <strong>校园宣讲会</strong>
+        <a href="/mock_joblist_cards/promo.html">查看宣讲会日程</a>
+        <a href="/mock_joblist_cards/promo.html">内推通道</a>
+      </div>
+
+      <div id="job-list"></div>
+
+      <button type="button" id="load-more">加载更多职位</button>
+    </main>
+
+    <script>
+      const ALL_JOBS = [
+        {
+          id: 'K2001',
+          title: '具身智能研发工程师',
+          dept: '通用机器人部',
+          city: '北京',
+          degree: '硕士',
+          desc: '负责 VLA 模型的训练与真机部署，参与双臂协同操作算法研发。',
+        },
+        {
+          id: 'K2002',
+          title: '机器人算法工程师（运动控制）',
+          dept: '通用机器人部',
+          city: '深圳',
+          degree: '硕士',
+          desc: '负责机械臂运动学与动力学建模、轨迹规划与控制算法开发。',
+        },
+        {
+          id: 'K2003',
+          title: '大模型后训练算法工程师',
+          dept: '基础模型部',
+          city: '北京',
+          degree: '硕士',
+          desc: '负责强化学习后训练、数据构造与模型评测。',
+        },
+        {
+          id: 'K2004',
+          title: '视觉感知算法工程师',
+          city: '上海',
+          degree: '硕士',
+          desc: '负责多模态感知、目标检测与三维重建。',
+        },
+        {
+          id: 'K2005',
+          title: '嵌入式软件工程师',
+          dept: '硬件部',
+          city: '深圳',
+          degree: '本科',
+          desc: '负责机器人底层驱动与实时控制系统开发。',
+        },
+        {
+          id: 'K2006',
+          title: '产品运营（校招）',
+          dept: '市场部',
+          city: '北京',
+          degree: '本科',
+          desc: '负责产品推广与用户运营。',
+        },
+      ];
+
+      const PAGE_SIZE = 3;
+      let rendered = 0;
+
+      function renderNext() {
+        const container = document.getElementById('job-list');
+        const batch = ALL_JOBS.slice(rendered, rendered + PAGE_SIZE);
+
+        for (const job of batch) {
+          const card = document.createElement('div');
+          card.className = 'job-card';
+          card.innerHTML = `
+            <h3><a href="/mock_joblist_cards/job.html?jid=${job.id}">${job.title}</a></h3>
+            <div class="job-meta">
+              ${job.dept ? `<span>${job.dept}</span>` : ''}
+              <span>${job.city}</span>
+              <span>${job.degree}及以上</span>
+              <span>校园招聘</span>
+            </div>
+            <p class="job-desc">${job.desc}</p>`;
+          container.appendChild(card);
+        }
+
+        rendered += batch.length;
+        if (rendered >= ALL_JOBS.length) {
+          document.getElementById('load-more').style.display = 'none';
+        }
+      }
+
+      renderNext();
+      document.getElementById('load-more').addEventListener('click', renderNext);
+    </script>
+  </body>
+</html>

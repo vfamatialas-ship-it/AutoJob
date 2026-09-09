@@ -44,8 +44,9 @@ for (const site of MOCK_SITES) {
     });
 
     test('页面有可提交的表单与提交按钮', async ({ page }) => {
-      // 被登录挡住的站，表单在登录前不可见 —— 由 filler.spec.ts 的专项用例覆盖
+      // 被登录挡住的站表单不可见；岗位列表页压根没有申请表 —— 各有专项用例覆盖
       test.skip(site.gated === true, `${site.id} 需要先登录才能看到表单`);
+      test.skip(site.isJobList === true, `${site.id} 是岗位列表页，没有申请表`);
 
       await expect(page.locator('form')).toHaveCount(1);
       await expect(page.locator('#submit-btn')).toBeVisible();

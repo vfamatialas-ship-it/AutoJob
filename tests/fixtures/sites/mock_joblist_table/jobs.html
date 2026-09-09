@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>I 公司 2027 届校园招聘 - 职位列表</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        border: 1px solid #e2e5ea;
+      }
+      th,
+      td {
+        padding: 12px 14px;
+        text-align: left;
+        border-bottom: 1px solid #eef0f3;
+        font-size: 14px;
+      }
+      th {
+        background: #f5f7fa;
+        font-weight: 600;
+        color: #444;
+      }
+      td a {
+        color: #1f4e9c;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .filters {
+        margin-bottom: 16px;
+        display: flex;
+        gap: 10px;
+      }
+      .filters select {
+        padding: 6px 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>I 公司 · 2027 届校园招聘</h1>
+      <p>共 12 个在招职位</p>
+    </header>
+
+    <main>
+      <!--
+        本站形态：标准表格列表。
+        1. 每行一个职位，列固定：职位名称 / 部门 / 地点 / 类型 / 学历 / 发布时间
+        2. 职位名称是链接，href 里带 jobId
+        3. 有筛选下拉，但不影响解析（解析器不该把它当成职位）
+        4. 岗位方向刻意混杂：机器人/具身智能与 Java/前端/销售同列，
+           用于验证 Hard Filter 与关键词打分确实能把不相关的挡掉
+      -->
+      <div class="filters">
+        <select id="filter-city">
+          <option>全部城市</option>
+          <option>北京</option>
+          <option>上海</option>
+        </select>
+        <select id="filter-type">
+          <option>全部类型</option>
+          <option>校园招聘</option>
+        </select>
+      </div>
+
+      <table id="job-table">
+        <thead>
+          <tr>
+            <th>职位名称</th>
+            <th>所属部门</th>
+            <th>工作地点</th>
+            <th>职位类型</th>
+            <th>学历要求</th>
+            <th>发布时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="/mock_joblist_table/job.html?id=J1001">具身智能算法工程师</a></td>
+            <td>机器人研究院</td>
+            <td>北京</td>
+            <td>校园招聘</td>
+            <td>硕士及以上</td>
+            <td>2026-09-01</td>
+          </tr>
+          <tr>
+            <td><a href="/mock_joblist_table/job.html?id=J1002">机器人运动规划算法工程师</a></td>
+            <td>机器人研究院</td>
+            <td>上海</td>
+            <td>校园招聘</td>
+            <td>硕士及以上</td>
+            <td>2026-09-01</td>
+          </tr>
+          <tr>
+            <td><a href="/mock_joblist_table/job.html?id=J1003">VLA 大模型算法工程师</a></td>
+            <td>智能中心</td>
+            <td>北京</td>
+            <td>校园招聘</td>
+            <td>硕士及以上</td>
+            <td>2026-09-02</td>
+          </tr>
+          <tr>
+            <td><a href="/mock_joblist_table/job.html?id=J1004">强化学习算法工程师</a></td>
+            <td>智能中心</td>
+            <td>深圳</td>
+            <td>校园招聘</td>
+            <td>博士</td>
+            <td>2026-09-02</td>
+          </tr>
+          <tr>
+            <td><a href="/mock_joblist_table/job.html?id=J1005">自动驾驶规控算法工程师</a></td>
+            <td>智驾中心</td>
+            <td>上海</td>
+            <td>校园招聘</td>
+            <td>硕士及以上</td>
+            <td>2026-09-03</td>
+          </tr>
+          <tr>
+            <td><a href="/mock_joblist_table/job.html?id=J1006">Java 后端开发工程师</a></td>
+            <td>基础架构</td>
+            <td>北京</td>
+            <td>校园招聘</td>
+            <td>本科及以上</td>
+            <td>2026-09-03</td>
+          </tr>
+          <tr>
+            <td><a href="/mock_joblist_table/job.html?id=J1007">前端开发工程师</a></td>
+            <td>基础架构</td>
+            <td>北京</td>
+            <td>校园招聘</td>
+            <td>本科及以上</td>
+            <td>2026-09-03</td>
+          </tr>
+          <tr>
+            <td><a href="/mock_joblist_table/job.html?id=J1008">销售管理培训生</a></td>
+            <td>销售中心</td>
+            <td>广州</td>
+            <td>校园招聘</td>
+            <td>本科及以上</td>
+            <td>2026-09-04</td>
+          </tr>
+          <tr>
+            <td><a href="/mock_joblist_table/job.html?id=J1009">软件测试工程师</a></td>
+            <td>质量部</td>
+            <td>成都</td>
+            <td>校园招聘</td>
+            <td>本科及以上</td>
+            <td>2026-09-04</td>
+          </tr>
+          <tr>
+            <td><a href="/mock_joblist_table/job.html?id=J1010">机械结构设计工程师</a></td>
+            <td>机器人研究院</td>
+            <td>西安</td>
+            <td>校园招聘</td>
+            <td>硕士及以上</td>
+            <td>2026-09-05</td>
+          </tr>
+          <tr>
+            <td><a href="/mock_joblist_table/job.html?id=J1011">具身智能算法专家</a></td>
+            <td>机器人研究院</td>
+            <td>北京</td>
+            <td>社会招聘</td>
+            <td>博士</td>
+            <td>2026-09-05</td>
+          </tr>
+          <tr>
+            <td><a href="/mock_joblist_table/job.html?id=J1012">控制算法工程师</a></td>
+            <td>机器人研究院</td>
+            <td>西安</td>
+            <td>校园招聘</td>
+            <td>硕士及以上</td>
+            <td>2026-09-06</td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </body>
+</html>

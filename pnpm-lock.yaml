@@ -179,6 +179,12 @@ importers:
       '@autojob/form-schema':
         specifier: workspace:*
         version: link:../../packages/form-schema
+      '@autojob/job-discovery':
+        specifier: workspace:*
+        version: link:../../packages/job-discovery
+      '@autojob/job-matcher':
+        specifier: workspace:*
+        version: link:../../packages/job-matcher
       commander:
         specifier: ^12.1.0
         version: 12.1.0
@@ -268,6 +274,30 @@ importers:
       '@autojob/core':
         specifier: workspace:*
         version: link:../core
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+
+  packages/job-discovery:
+    dependencies:
+      '@autojob/core':
+        specifier: workspace:*
+        version: link:../core
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+
+  packages/job-matcher:
+    dependencies:
+      '@autojob/candidate-profile':
+        specifier: workspace:*
+        version: link:../candidate-profile
+      '@autojob/core':
+        specifier: workspace:*
+        version: link:../core
+      '@autojob/job-discovery':
+        specifier: workspace:*
+        version: link:../job-discovery
       zod:
         specifier: ^3.24.1
         version: 3.25.76
