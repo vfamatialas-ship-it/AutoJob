@@ -257,7 +257,10 @@ if (!existsSync(exePath)) {
  * 都从这里取 Worker —— 没有这个标记，交叉构建时忘了重跑本脚本就会把上一次的
  * Worker 静默打进安装包。src-tauri/build.rs 会读它并在不匹配时中断构建。
  */
-writeFileSync(join(outDir, 'TARGET'), isWindowsTarget ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux');
+writeFileSync(
+  join(outDir, 'TARGET'),
+  isWindowsTarget ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux',
+);
 
 console.log('[5/5] 随附原生模块与浏览器驱动');
 const { copied, missing } = copyModuleClosure(EXTERNAL_MODULES, join(outDir, 'node_modules'));

@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm privacy:check",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm privacy:check",
     "mock:serve": "tsx tests/fixtures/serve.ts",
     "test:e2e": "playwright test",
     "privacy:check": "node scripts/privacy-check.mjs",

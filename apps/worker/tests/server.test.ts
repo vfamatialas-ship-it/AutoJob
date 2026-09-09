@@ -130,7 +130,9 @@ describe('跨源访问', () => {
   });
 
   it('放行响应带 Vary: Origin —— 允许列表随来源变化，不能被缓存串了', async () => {
-    const response = await fetch(`${worker.baseUrl}/health`, { headers: { origin: 'tauri://localhost' } });
+    const response = await fetch(`${worker.baseUrl}/health`, {
+      headers: { origin: 'tauri://localhost' },
+    });
     expect(response.headers.get('vary')).toBe('Origin');
   });
 });

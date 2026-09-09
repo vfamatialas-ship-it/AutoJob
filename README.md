@@ -101,20 +101,20 @@ TypeScript · Node 22 · Playwright · SQLite + Drizzle · Zod · Vitest · Taur
 
 ## 里程碑
 
-| 里程碑  | 内容                                | 状态    |
-| ------- | ----------------------------------- | ------- |
-| M0      | 项目地基、质量闸门                  | ✅ 完成 |
-| M1      | Candidate Profile 数据底座          | ✅ 完成 |
-| M2      | Mock ATS 站点群（9 个刁难站）       | ✅ 完成 |
-| M3      | Form Schema + 语义分类器            | ✅ 完成 |
-| M4      | Mapping Engine + Mapping Memory     | ✅ 完成 |
-| M5      | 浏览器填写引擎（提交前停止）        | ✅ 完成 |
-| M6      | Application Diff + 内容自适应       | ✅ 完成 |
-| M7      | Job Discovery + Job Matcher         | ✅ 完成 |
-| M8      | ATS 识别 + Moka Adapter             | ✅ 完成 |
-| M9      | Submit 验证 + 投递看板（MVP 完成）  | ✅ 完成 |
-| M10     | Desktop GUI（Tauri + React）        | ✅ 完成 |
-| M11     | 产品化打包（Linux `.deb` + Windows `.exe`）| ✅ 完成 |
+| 里程碑 | 内容                                        | 状态    |
+| ------ | ------------------------------------------- | ------- |
+| M0     | 项目地基、质量闸门                          | ✅ 完成 |
+| M1     | Candidate Profile 数据底座                  | ✅ 完成 |
+| M2     | Mock ATS 站点群（9 个刁难站）               | ✅ 完成 |
+| M3     | Form Schema + 语义分类器                    | ✅ 完成 |
+| M4     | Mapping Engine + Mapping Memory             | ✅ 完成 |
+| M5     | 浏览器填写引擎（提交前停止）                | ✅ 完成 |
+| M6     | Application Diff + 内容自适应               | ✅ 完成 |
+| M7     | Job Discovery + Job Matcher                 | ✅ 完成 |
+| M8     | ATS 识别 + Moka Adapter                     | ✅ 完成 |
+| M9     | Submit 验证 + 投递看板（MVP 完成）          | ✅ 完成 |
+| M10    | Desktop GUI（Tauri + React）                | ✅ 完成 |
+| M11    | 产品化打包（Linux `.deb` + Windows `.exe`） | ✅ 完成 |
 
 完整计划见 [实施计划](docs/02-计划/AutoJob_PLAN_v1.0.md)。
 
