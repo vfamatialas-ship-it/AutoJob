@@ -20,7 +20,11 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm privacy:check",
     "mock:serve": "tsx tests/fixtures/serve.ts",
     "test:e2e": "playwright test",
-    "privacy:check": "node scripts/privacy-check.mjs"
+    "privacy:check": "node scripts/privacy-check.mjs",
+    "worker": "tsx apps/worker/src/main.ts",
+    "desktop:dev": "pnpm --dir apps/desktop tauri dev",
+    "desktop:build": "pnpm --dir apps/desktop tauri build",
+    "build:worker": "node scripts/build-worker.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
@@ -28,9 +32,11 @@
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^22.10.2",
     "drizzle-kit": "^0.31.10",
+    "esbuild": "^0.28.2",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "playwright": "^1.63.0",
+    "postject": "1.0.0-alpha.6",
     "prettier": "^3.4.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",

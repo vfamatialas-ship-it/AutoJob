@@ -1,0 +1,22 @@
+{
+  "name": "@autojob/worker",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "本地 Worker：把自动化能力暴露给桌面端",
+  "main": "./src/index.ts",
+  "dependencies": {
+    "@autojob/application-diff": "workspace:*",
+    "@autojob/ats-detector": "workspace:*",
+    "@autojob/adapter-generic": "workspace:*",
+    "@autojob/adapter-moka": "workspace:*",
+    "@autojob/browser": "workspace:*",
+    "@autojob/candidate-profile": "workspace:*",
+    "@autojob/core": "workspace:*",
+    "@autojob/database": "workspace:*",
+    "@autojob/form-mapper": "workspace:*",
+    "@autojob/form-schema": "workspace:*",
+    "@autojob/job-discovery": "workspace:*",
+    "@autojob/job-matcher": "workspace:*"
+  }
+}

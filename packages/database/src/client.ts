@@ -10,9 +10,9 @@
 import { mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
-import { AutoJobError, ErrorCode } from '@autojob/core';
+import { AutoJobError, ErrorCode, requireExternal } from '@autojob/core';
 import * as schema from './schema.js';
 
 /** 默认数据库位置。个人投递数据留在本地（PRD §41） */
@@ -112,9 +112,15 @@ export function openDatabase(options: OpenOptions = {}): AutoJobDatabase {
     mkdirSync(dirname(path), { recursive: true });
   }
 
+  /*
+   * better-sqlite3 是原生扩展，打包成单文件可执行程序后不能走普通 require ——
+   * 必须从可执行文件旁边解析。详见 requireExternal 的说明。
+   */
+  const DatabaseCtor = requireExternal<typeof Database>('better-sqlite3', import.meta.url);
+
   let sqlite: Database.Database;
   try {
-    sqlite = new Database(path);
+    sqlite = new DatabaseCtor(path);
   } catch (cause) {
     throw new AutoJobError(ErrorCode.STORAGE_FAILED, `无法打开数据库：${path}`, { cause });
   }

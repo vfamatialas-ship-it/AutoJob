@@ -6,3 +6,8 @@ pnpm-lock.yaml
 tests/fixtures/sites/**/*.html
 playwright-report/
 test-results/
+apps/desktop/src-tauri/
+apps/desktop/dist/
+dist-worker/
+.worker-build/
+scripts/sea-shims/

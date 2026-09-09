@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "AutoJob 秋招助手",
+  "version": "0.0.1",
+  "identifier": "com.autojob.assistant",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:5183",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "AutoJob 秋招助手",
+        "width": 1180,
+        "height": 780,
+        "minWidth": 900,
+        "minHeight": 600,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' http://127.0.0.1:*; style-src 'self' 'unsafe-inline'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi", "deb", "appimage"],
+    "icon": ["icons/icon.png"],
+    "resources": {
+      "../../../dist-worker/": "worker/"
+    },
+    "externalBin": [],
+    "shortDescription": "面向异构企业 ATS 的语义驱动校园招聘自动投递助手",
+    "longDescription": "本地优先的秋招投递助手：统一维护候选人档案，自动识别招聘系统、抓取岗位、按方向匹配，并把档案正确映射到各家申请表。提交前展示完整转换说明，由用户确认。"
+  }
+}

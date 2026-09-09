@@ -14,8 +14,8 @@
 import { mkdir } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { chromium, type BrowserContext, type Page } from 'playwright';
-import { AutoJobError, ErrorCode, type Logger } from '@autojob/core';
+import type { BrowserContext, Page, chromium as ChromiumType } from 'playwright';
+import { AutoJobError, ErrorCode, requireExternal, type Logger } from '@autojob/core';
 import { READ_BODY_TEXT } from './page-scripts.js';
 
 /** 默认的浏览器 profile 目录。个人数据留在本地（PRD §41） */
@@ -47,6 +47,15 @@ export interface BrowserSession {
 export async function launchSession(options: SessionOptions = {}): Promise<BrowserSession> {
   const profileDir = options.profileDir ?? DEFAULT_PROFILE_DIR;
   await mkdir(profileDir, { recursive: true });
+
+  /*
+   * Playwright 带浏览器内核约 150MB，不打进单文件可执行程序 ——
+   * 打包后从可执行文件旁边解析，开发时走正常模块解析。
+   */
+  const { chromium } = requireExternal<{ chromium: typeof ChromiumType }>(
+    'playwright',
+    import.meta.url,
+  );
 
   let context: BrowserContext;
   try {

@@ -25,6 +25,9 @@ runs/
 # ============================================================
 node_modules/
 dist/
+dist-worker/
+.worker-build/
+apps/desktop/src-tauri/target/
 build/
 *.tsbuildinfo
 coverage/

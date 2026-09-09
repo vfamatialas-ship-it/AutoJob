@@ -4,6 +4,195 @@
 
 ---
 
+## 2026-09-09 · M10 桌面端 GUI + M11 产品化打包
+
+### 本轮目标
+
+把 CLI 能力搬进桌面应用，并打成用户不需要装 Node / Python 就能用的安装包（PRD Phase 11 + 12、§63）。
+
+### 修改文件
+
+- `apps/worker/src/`：`server` `routes` `bootstrap` `main` `index`、`tests/server.test.ts`
+- `apps/desktop/src/`：`App.tsx` `main.tsx` `worker-client.ts`
+- `apps/desktop/src-tauri/`：`src/main.rs` `tauri.conf.json` `Cargo.toml`
+- `packages/core/src/native-require.ts`（新增）、`index.ts`
+- `packages/database/src/client.ts`、`packages/browser/src/session.ts`：改走 `requireExternal`
+- `scripts/build-worker.mjs`、`scripts/sea-shims/native-module.cjs`（新增）
+- `.github/workflows/release.yml`（新增）、`docs/06-使用手册/README.md`（新增）
+- `eslint.config.js`、`.prettierignore`、`.gitignore`、`tsconfig.json`、`package.json`
+
+### 实现内容
+
+**1. 三层进程结构：Rust 外壳 + Node Worker + React 界面**
+
+自动化逻辑（Playwright、语义映射）全在 TypeScript 里，用 Rust 重写一遍毫无收益。所以 Rust 只当外壳：拉起 Worker、转交连接信息、退出时收尸。
+
+Worker 与界面之间走 localhost HTTP。**握手不落磁盘**：Worker 随机选端口、生成一次性令牌，在 stdout 打一行 `AUTOJOB_WORKER_READY <port> <token>`，Rust 读到才算就绪。固定端口会冲突，令牌写文件则会留在磁盘上被别的进程读到。
+
+Worker 只绑 `127.0.0.1`，所有请求校验 `x-autojob-token`（`/health` 除外），所有错误消息过一遍 PII 脱敏——界面上的报错也可能被截图。
+
+**2. 界面上没有「一键投递」按钮，这是有意的**
+
+PRD §3.7 禁止未经确认的批量投递。做一个「全部投递」按钮是最容易的，也最容易毁掉一次秋招——填错一次不可撤回。所以桌面端五个页面（投递看板 / 岗位匹配 / 我的档案 / 附件库 / 设置）**全部只读或只改本地记录**，真正的填写仍然由 `autojob apply` 驱动，并在提交前停住。
+
+`/profile/summary` 返回的手机号与邮箱是脱敏后的（`138****1234`）。界面没有展示完整号码的必要，而它可能被投屏或截图。
+
+**3. 单文件可执行程序：esbuild → Node SEA → postject**
+
+`pnpm autojob` 要求机器上有 Node 和整个 monorepo，普通用户不可能满足。`scripts/build-worker.mjs` 把 Worker 打成一个不依赖外部 Node 的可执行文件。
+
+两个坑值得记下来：
+
+- **SEA 只能跑 CJS**，没有顶层 await，也没有 `import.meta`。原来的 `index.ts` 两样都用了，于是拆成 `bootstrap.ts`（导出一个函数）+ `main.ts`（CJS 安全的调用方）。
+- **原生模块打不进 bundle**。`better-sqlite3` 是 `.node` 二进制；Playwright 带 150MB 浏览器内核。但也不能简单 external——SEA 里的 `require` 只认内置模块，drizzle 在顶层 require `better-sqlite3` 时会直接 `ERR_UNKNOWN_BUILTIN_MODULE`。解法是 esbuild `--alias` 到一个运行时才解析的垫片，由 `packages/core/src/native-require.ts` 的 `requireExternal` 按可执行文件位置查找。
+
+**4. 依赖闭包必须按 package.json 递归展开**
+
+`cp -rL node_modules/better-sqlite3` 是错的。pnpm 用隔离式布局，`bindings`、`node-addon-api` 这些依赖不在包目录内部，而是并列在 `.pnpm/better-sqlite3@x/node_modules/` 下——只拷一个包，运行时必然 MODULE_NOT_FOUND，而那时用户已经装完了。所以 `copyModuleClosure` 从 package.json 的 `dependencies` 逐级展开，**有任何一个解析不到就构建期失败**，不留到运行时。
+
+**5. Worker 路径按资源目录解析，不能用相对路径**
+
+最初写的是 `Command::new("./autojob-worker")`。装完之后应用会从桌面快捷方式、开始菜单或 `/usr/bin` 软链启动，工作目录是任意的，这条路径必然找不到。改为 `app.path().resource_dir()` —— 那是各平台安装器实际放文件的地方；同时 `tauri.conf.json` 把整个 `dist-worker/` 声明为 resources，否则 Worker 根本不会进安装包。
+
+**6. 桌面端与 Worker 虽同机但不同源**
+
+装完后界面一片空白，日志里是「拒绝无令牌的请求」。原因是 WebView 的 origin 是
+`tauri://localhost`，请求 `http://127.0.0.1:<port>` 属于跨源；带自定义头
+`x-autojob-token` 的 POST 会先发一个 **OPTIONS 预检，而预检本身不带任何自定义头**，
+按普通请求校验令牌必然 401，真正的 POST 根本发不出去。
+
+修法是预检在鉴权之前放行（只回允许的方法与头名，不含任何数据），并把各平台的
+WebView origin 列入白名单——Linux/macOS 是 `tauri://localhost`，Windows 是
+`http://tauri.localhost`。列表之外的来源一律回 `null`，网页借 localhost 探测
+仍然拿不到响应。
+
+**7. Windows 包必须在 Windows 上构建**
+
+`better-sqlite3` 是按目标平台编译的原生扩展，Linux 上交叉编译不现实。`release.yml` 用 GitHub 的 windows-latest 与 ubuntu-22.04 两个 runner，打标签触发，先跑 `pnpm check`——不过质量闸门就不出包。
+
+### 测试结果
+
+```
+pnpm lint       ✓
+pnpm typecheck  ✓
+pnpm test       ✓ 22 files / 376 tests passed
+pnpm privacy:check ✓ 0 处真实个人信息
+```
+
+实跑验证（Linux）：
+
+```
+$ node scripts/build-worker.mjs
+  ✓ dist-worker/autojob-worker（125MB）+ 4 个随附模块
+
+$ HOME=<空目录> ./dist-worker/autojob-worker      # 不依赖系统 Node
+  AUTOJOB_WORKER_READY 39707 <token>
+  GET /health → {"ok":true,"version":"0.0.1"}
+
+$ pnpm exec tauri build --bundles deb
+  ✓ AutoJob 秋招助手_0.0.1_amd64.deb（58MB）
+```
+
+### 已知限制
+
+1. **Windows 安装包尚未实跑验证**。`release.yml` 已就绪，但本机是 Linux，`.msi`/`.exe` 路径只能等打 tag 后由 CI 产出再验。
+2. **Playwright 的 Chromium（约 150MB）不在安装包里**，首次使用时下载。这是对 PRD §63「所有依赖必须打包」的一处有意偏离：装进去会让包从 58MB 涨到 200MB+。已在使用手册中说明。
+3. **桌面端不能发起投递**，只能看板与匹配；真正的填写仍走 CLI。这是 §3.7 的要求，不是未完成项。
+4. **应用图标是占位的**，未做正式设计。
+5. Worker 每个请求开关一次 SQLite 连接。数据量小时无所谓，投递记录上千条后需要改成连接池。
+
+### 下一阶段建议
+
+M0–M11 全部完成，项目已可自用。按价值排序的后续项：
+
+1. **打第一个 tag 出 Windows 包**，在真实 Windows 机器上跑一遍安装流程。
+2. **扩充 ATS Adapter**：目前只有 Moka + Generic 兜底。`秋招.xlsx` 样本里飞书招聘 2 家、自研 7 家，飞书的岗位列表需要登录，得先解决登录态。
+3. **接系统 Keychain**（`packages/security` 目前仍是明文 passthrough）。
+4. 投递记录多起来后再考虑 SQLite 连接池与看板分页。
+
+---
+
+## 2026-09-09 · M8 ATS 识别 + Moka Adapter · M9 提交验证 + 投递看板
+
+### 本轮目标
+
+从「通用兜底」升级到「认识具体 ATS」，并补上提交后的验证与投递记录追踪（PRD Phase 7 / 9 / 10）。
+
+### 修改文件
+
+- `packages/ats-detector/src/`：`detector` `adapter` `index`、`tests/detector.test.ts`
+- `packages/adapters/moka/src/`：`moka-adapter` `index`
+- `packages/adapters/generic/src/index.ts`
+- `apps/cli/src/commands/app.ts`：`app list` / `app update` / `app timeline`
+- `packages/database/src/repository.ts`：投递记录与事件时间线
+- `docs/05-调研/ATS初步识别.md`
+
+### 实现内容
+
+**1. M8 的选型被实地探测推翻了**
+
+原计划做飞书招聘（`秋招.xlsx` 里有小鹏、德赛西威两家）。实际探测发现飞书的岗位列表**需要登录**——智元的站点正文只有「登录」两个字。而 Moka 的岗位列表是公开的。
+
+先做能读到数据的那个。飞书留到解决登录态之后。
+
+**2. 识别 ATS 不能看域名**
+
+最初的想法是按 hostname 匹配 `*.mokahr.com`。探测真实站点后发现这条路走不通：大疆用 `apply.careers.dji.com`，vivo 和普渡用自己的域名——**企业可以换域名，但换不掉 CDN**。
+
+大疆的页面加载 `static-ats.mokahr.com` 的脚本，vivo 与普渡加载 `acdn.bstatics.com`（北森）。所以识别改成看**资源来源**：
+
+| 信号        | 权重 |
+| ----------- | ---- |
+| 资源域名    | 0.70 |
+| hostname    | 0.55 |
+| URL 路径特征 | 0.25 |
+
+超过 0.6 才启用专用 Adapter，否则退回 Generic。阈值定在 0.6 是因为：认错 ATS 比不认识更糟——Generic 解析失败时用户会看到空列表，而错误的 Adapter 会安静地填错字段。
+
+**3. 通用列表解析在真实 Moka 站点上的四处修正**
+
+大疆站点实测暴露的问题，每一处都不是猜的：
+
+- `#/job/xxx` 是 Moka 的哈希路由，不是页内锚点。原来的「纯片段链接」过滤把全部岗位都滤掉了。
+- 卡片式布局里 `<a>` 包住整张卡片，取 `innerText` 得到 300 字的「标题」。改成优先取标题元素，退而取第一行。
+- `<td>` 被当成列表项而不是 `<tr>`。加了「多数兄弟节点都含链接」这一条判据。
+- 30 个岗位被去重成 1 个：URL 里的 `143359` 是**页面 id** 不是岗位 id。改成先认哈希路由；若一组链接解析出的 id 全都相同，说明这个 id 没有区分度，直接弃用。
+
+修正后大疆站点读出 30 个岗位，19 个通过硬性筛选，得分最高的三个是端到端决策规划、世界模型、多模态空间感知——与本人方向吻合，说明打分是有效的。
+
+**4. M9：点了提交不等于提交成功**
+
+PRD §60 明确要求验证。`verifySubmission` 找三种独立证据：成功文案、URL 跳转到投递记录页、页面出现新的投递条目。三个都没有就判失败，**哪怕按钮确实被点了**。
+
+URL 跳转但没有明确文案时，返回 `submitted: true` 但 detail 里写明「请人工确认」——这种半确定的情况不能当成功也不能当失败，只能如实标注。
+
+**5. 投递看板**
+
+`app list` 按状态分组，`app update` 手动改状态（笔试、面试这些系统探测不到，只能自己填），`app timeline` 看一次投递的完整事件链。状态变更全部写 `application_events`，不覆盖历史——秋招周期长，三个月后想知道「这家什么时候投的、什么时候约的面」得有记录。
+
+### 测试结果
+
+```
+pnpm lint       ✓
+pnpm typecheck  ✓
+pnpm test       ✓ 全部通过
+pnpm privacy:check ✓
+```
+
+Adapter 测试全部跑在 DOM fixture 上，CI 里无网络依赖（PRD §58）。
+
+### 已知限制
+
+1. **飞书招聘未支持**，其岗位列表需要登录态。
+2. Moka Adapter 只在大疆一家站点上实跑过。Moka 客户之间可能有模板差异。
+3. **真实站点上没有实际提交过**。`verifySubmission` 的成功分支只在 Mock 站点验证。这是有意的：真投一次不可撤回。
+
+### 下一阶段建议
+
+进入 M10 桌面端 GUI。CLI 已经能完成全流程，但要求用户记命令行参数；秋招期间高频使用，界面能省下不少心智负担。
+
+---
+
 ## 2026-09-09 · M7 Job Discovery + Job Matcher
 
 ### 本轮目标

@@ -11,7 +11,17 @@ export default tseslint.config(
       'materials/**',
       'docs/**',
       'playwright-report/**',
+      'apps/desktop/**',
+      '**/src-tauri/**',
       'test-results/**',
+      // 打包产物：esbuild 的 bundle 与随附的第三方模块，不是我们的源码
+      'dist-worker/**',
+      '.worker-build/**',
+      /*
+       * SEA 垫片是**模板**而非可运行代码：里面的 __AUTOJOB_SHIM_MODULE__
+       * 由 build-worker.mjs 在构建时替换。ESLint 只会把它当未定义变量报错。
+       */
+      'scripts/sea-shims/**',
     ],
   },
   js.configs.recommended,
